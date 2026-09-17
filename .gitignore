@@ -34,5 +34,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Misc
-.DS_Store
+*.DS_Store
 *.pem
+
+# Kubernetes
+infra/k8s/test-yamls/
