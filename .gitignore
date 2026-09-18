@@ -39,3 +39,7 @@ yarn-error.log*
 
 # Kubernetes
 infra/k8s/test-yamls/
+*dockerhub-secret.yaml
+*dockerhub-secret.yml
+!*dockerhub-secret.example.yaml
+!*dockerhub-secret.example.yml
