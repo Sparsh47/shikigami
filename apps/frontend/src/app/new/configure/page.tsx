@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { GitHubUser } from "@/types/user";
-import { AgentDeployment } from "@/types/repo";
 import {
     ArrowLeft,
     ArrowRight,
@@ -139,6 +138,7 @@ function ConfigureAgentContent() {
     // Deploy State
     const [isDeploying, setIsDeploying] = useState(false);
     const [deployStep, setDeployStep] = useState<string>("");
+    const [deployError, setDeployError] = useState<string | null>(null);
 
     useEffect(() => {
         async function loadUser() {
@@ -190,49 +190,76 @@ function ConfigureAgentContent() {
         setVisibleSecretIds((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const handleDeploy = () => {
+    const handleDeploy = async () => {
         if (!agentName.trim()) return;
 
         setIsDeploying(true);
-        setDeployStep("Cloning repository and parsing configurations…");
+        setDeployError(null);
+        setDeployStep("Connecting to build cluster…");
 
-        setTimeout(() => {
-            setDeployStep("Spinning up Kaniko in-cluster container builder…");
-        }, 800);
+        // Construct clone URL from htmlUrlParam or repoParam
+        let cloneUrl = htmlUrlParam;
+        if (!cloneUrl) {
+            cloneUrl = `https://github.com/${repoParam}.git`;
+        } else if (!cloneUrl.endsWith(".git")) {
+            cloneUrl = `${cloneUrl}.git`;
+        }
 
-        setTimeout(() => {
-            setDeployStep("Compiling runtime dependencies & layers…");
-        }, 1600);
+        const buildCmd = overrideBuild ? customBuildCmd : selectedFramework.defaultBuild;
+        const runCmd = overrideRun ? customRunCmd : selectedFramework.defaultRun;
+        const cpuValue = parseFloat(cpu.replace(/[^0-9.]/g, "")) || 1.0;
 
-        setTimeout(() => {
-            setDeployStep("Provisioning Kubernetes Pod and routing…");
-        }, 2400);
+        const payload = {
+            userId: user ? String(user.id) : "guest-user",
+            agentName: agentName.trim(),
+            framework: selectedFramework.name,
+            repoFullName: repoParam || agentName.trim(),
+            cloneUrl,
+            branch: branch || "main",
+            isPrivate: Boolean(isPrivate),
+            rootDir: rootDir || "./",
+            buildCommand: buildCmd,
+            runCommand: runCmd,
+            port: parseInt(port, 10) || 8080,
+            memory: memory,
+            cpu: cpuValue,
+            scalingMode: scalingMode,
+            envVars: envVars
+                .filter((v) => v.key.trim() !== "")
+                .map((v) => ({
+                    key: v.key.trim(),
+                    value: v.value,
+                    isSecret: v.isSecret,
+                })),
+        };
 
-        setTimeout(() => {
-            // Save deployment to localStorage so dashboard displays it immediately
-            const newDeployment: AgentDeployment = {
-                id: `dep-${Date.now().toString(36)}`,
-                name: agentName.trim(),
-                repo: repoParam || "custom-repo",
-                branch: branch,
-                commitSha: Math.random().toString(36).substring(2, 9),
-                commitMessage: "Initial agent deployment",
-                status: "ready",
-                url: `https://${agentName.trim().toLowerCase().replace(/[^a-z0-9-]/g, "")}.shikigami.app`,
-                framework: selectedFramework.name,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
+        try {
+            setDeployStep("Triggering Kaniko container build…");
 
-            try {
-                const existing = JSON.parse(localStorage.getItem("shikigami_deployments") || "[]");
-                localStorage.setItem("shikigami_deployments", JSON.stringify([newDeployment, ...existing]));
-            } catch (e) {
-                console.error("Failed to save deployment locally:", e);
+            const res = await fetch("http://localhost:8080/api/deployments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || errorData.error || "Failed to create deployment");
             }
 
-            router.push("/dashboard");
-        }, 3200);
+            const data = await res.json();
+            setDeployStep("Build job queued successfully in cluster!");
+
+            setTimeout(() => {
+                router.push("/dashboard");
+            }, 1200);
+        } catch (err: any) {
+            console.error("Deployment request failed:", err);
+            setIsDeploying(false);
+            setDeployError(err.message || "Failed to create deployment. Is the backend running on port 8080?");
+        }
     };
 
     const displayRepoName = repoParam || nameParam || "custom-agent-repo";
@@ -627,11 +654,10 @@ function ConfigureAgentContent() {
                                             key={m}
                                             type="button"
                                             onClick={() => setMemory(m)}
-                                            className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${
-                                                memory === m
+                                            className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${memory === m
                                                     ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
                                                     : "bg-[#1a1714] text-[#7a6e66] border-[#2e2924] hover:text-[#e8ddd5]"
-                                            }`}
+                                                }`}
                                         >
                                             {m}
                                         </button>
@@ -649,11 +675,10 @@ function ConfigureAgentContent() {
                                             key={c}
                                             type="button"
                                             onClick={() => setCpu(c)}
-                                            className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${
-                                                cpu === c
+                                            className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${cpu === c
                                                     ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
                                                     : "bg-[#1a1714] text-[#7a6e66] border-[#2e2924] hover:text-[#e8ddd5]"
-                                            }`}
+                                                }`}
                                         >
                                             {c.replace(" vCPU", "")}
                                         </button>
@@ -674,11 +699,10 @@ function ConfigureAgentContent() {
                                             key={mode.id}
                                             type="button"
                                             onClick={() => setScalingMode(mode.id as typeof scalingMode)}
-                                            className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${
-                                                scalingMode === mode.id
+                                            className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${scalingMode === mode.id
                                                     ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
                                                     : "bg-[#1a1714] text-[#7a6e66] border-[#2e2924] hover:text-[#e8ddd5]"
-                                            }`}
+                                                }`}
                                         >
                                             {mode.label}
                                         </button>
@@ -706,6 +730,13 @@ function ConfigureAgentContent() {
                         <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-[#1a1714]">
                             <div className="h-full bg-[#c96b3e] animate-pulse w-3/4 rounded-full" />
                         </div>
+                    </div>
+                )}
+
+                {/* Error banner if deployment fails */}
+                {deployError && (
+                    <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-xs text-red-300">
+                        {deployError}
                     </div>
                 )}
 

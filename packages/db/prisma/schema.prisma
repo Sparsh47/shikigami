@@ -14,3 +14,58 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Agent {
+  id          Int          @id @default(autoincrement())
+  userId      String
+  agentName   String
+  framework   String
+  deployments Deployment[]
+
+  repoFullName String
+  cloneUrl     String
+  branch       String  @default("main")
+  isPrivate    Boolean @default(false)
+
+  rootDir      String @default("./")
+  buildCommand String
+  runCommand   String
+  port         Int    @default(8080)
+
+  memory      String @default("1GB")
+  cpu         Float  @default(1.0)
+  scalingMode String @default("serverless")
+
+  envVars   EnvVar[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EnvVar {
+  id       Int     @id @default(autoincrement())
+  key      String
+  value    String
+  isSecret Boolean
+
+  agentId Int
+  agent   Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model Deployment {
+  id            String           @id @default(cuid())
+  agentId       Int
+  agent         Agent            @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  status        DeploymentStatus @default(QUEUED)
+  commitSha     String?
+  commitMessage String?
+  jobName       String?
+  url           String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+enum DeploymentStatus {
+  QUEUED
+  BUILDING
+  READY
+  FAILED
+}

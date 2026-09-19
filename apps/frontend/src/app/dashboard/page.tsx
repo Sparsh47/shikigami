@@ -27,9 +27,30 @@ type DeployStatus = "ready" | "building" | "failed" | "queued";
 export default function Dashboard() {
     const [user, setUser] = useState<GitHubUser | null>(null);
     const [loading, setLoading] = useState(true);
+    const [deploymentsLoading, setDeploymentsLoading] = useState(false);
+    const [deploymentsError, setDeploymentsError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | DeployStatus>("all");
     const [deployments, setDeployments] = useState<AgentDeployment[]>([]);
+
+    // ── Fetch deployments from backend, fall back to localStorage ─────────────
+    async function loadDeployments(userId: string) {
+        setDeploymentsLoading(true);
+        setDeploymentsError(null);
+        try {
+            const res = await fetch(
+                `http://localhost:8080/api/deployments?userId=${encodeURIComponent(userId)}`
+            );
+            if (!res.ok) throw new Error(`API returned ${res.status}`);
+            const data = await res.json();
+            setDeployments(data.deployments ?? []);
+        } catch (err) {
+            console.warn("Backend unavailable:", err);
+            setDeploymentsError("Could not reach backend — make sure the API is running.");
+        } finally {
+            setDeploymentsLoading(false);
+        }
+    }
 
     useEffect(() => {
         async function loadUser() {
@@ -38,6 +59,8 @@ export default function Dashboard() {
                 if (!response.ok) { setLoading(false); return; }
                 const data = await response.json();
                 setUser(data.user);
+                // Load deployments once we know the userId
+                await loadDeployments(String(data.user.id));
             } catch (error) {
                 console.error("Failed to load user:", error);
             } finally {
@@ -45,16 +68,6 @@ export default function Dashboard() {
             }
         }
         loadUser();
-
-        // Load deployments saved from configure page
-        try {
-            const saved = localStorage.getItem("shikigami_deployments");
-            if (saved) {
-                setDeployments(JSON.parse(saved));
-            }
-        } catch (e) {
-            console.error("Failed to load deployments:", e);
-        }
     }, []);
 
     if (loading) {
@@ -149,8 +162,45 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                {/* Error banner if backend unreachable */}
+                {deploymentsError && (
+                    <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-400">
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                        <span className="flex-1">{deploymentsError}</span>
+                        <button
+                            onClick={() => user && loadDeployments(String(user.id))}
+                            className="shrink-0 inline-flex items-center gap-1 font-medium hover:text-amber-300 transition-colors cursor-pointer"
+                        >
+                            <RefreshCw className="h-3 w-3" />
+                            Retry
+                        </button>
+                    </div>
+                )}
+
                 {/* Deployments List or Empty state */}
-                {(() => {
+                {deploymentsLoading ? (
+                    <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 animate-pulse">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="space-y-2.5 flex-1">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="h-4 w-36 rounded-md bg-[#2e2924]" />
+                                            <div className="h-4 w-16 rounded-full bg-[#2e2924]" />
+                                            <div className="h-4 w-20 rounded-md bg-[#2e2924]" />
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <div className="h-3 w-20 rounded bg-[#2e2924]" />
+                                            <div className="h-3 w-32 rounded bg-[#2e2924]" />
+                                            <div className="h-3 w-16 rounded bg-[#2e2924]" />
+                                        </div>
+                                    </div>
+                                    <div className="h-8 w-16 rounded-xl bg-[#2e2924]" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (() => {
                     const filtered = deployments.filter((d) => {
                         const matchesQuery =
                             d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -184,12 +234,46 @@ export default function Dashboard() {
                         );
                     }
 
+                    const statusBadge = (status: AgentDeployment["status"]) => {
+                        switch (status) {
+                            case "ready":
+                                return (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                        Ready
+                                    </span>
+                                );
+                            case "building":
+                                return (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-400 border border-amber-500/20">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                        Building
+                                    </span>
+                                );
+                            case "failed":
+                                return (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-400 border border-red-500/20">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                                        Failed
+                                    </span>
+                                );
+                            case "queued":
+                                return (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2e2924] px-2.5 py-0.5 text-xs font-medium text-[#7a6e66] border border-[#3e3730]">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-[#7a6e66]" />
+                                        Queued
+                                    </span>
+                                );
+                        }
+                    };
+
                     return (
                         <div className="space-y-4">
                             {filtered.map((dep) => (
-                                <div
+                                <Link
                                     key={dep.id}
-                                    className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 transition-all hover:border-[#c96b3e]/40"
+                                    href={`/deployments/${dep.id}`}
+                                    className="block rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 transition-all hover:border-[#c96b3e]/40 cursor-pointer"
                                 >
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="space-y-1.5">
@@ -197,10 +281,7 @@ export default function Dashboard() {
                                                 <h3 className="text-base font-semibold text-[#e8ddd5]">
                                                     {dep.name}
                                                 </h3>
-                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/20">
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                                    Ready
-                                                </span>
+                                                {statusBadge(dep.status)}
                                                 <span className="rounded-md bg-[#1a1714] px-2 py-0.5 text-[11px] font-medium text-[#7a6e66] border border-[#2e2924]">
                                                     {dep.framework}
                                                 </span>
@@ -222,18 +303,19 @@ export default function Dashboard() {
                                         </div>
 
                                         <div className="flex items-center gap-3 self-start sm:self-auto">
-                                            <a
-                                                href={dep.url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] px-3.5 py-2 text-xs font-medium text-[#e8ddd5] hover:border-[#c96b3e]/40 hover:text-white transition-colors"
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    window.open(dep.url, "_blank", "noreferrer");
+                                                }}
+                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] px-3.5 py-2 text-xs font-medium text-[#e8ddd5] hover:border-[#c96b3e]/40 hover:text-white transition-colors cursor-pointer"
                                             >
                                                 Visit
                                                 <ExternalLink className="h-3 w-3 text-[#7a6e66]" />
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     );

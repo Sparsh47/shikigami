@@ -1,10 +1,21 @@
 process.loadEnvFile();
 
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { prisma } from "@repo/db";
+import { userRoutes } from "./routes/deployments.routes.js";
 
 const fastify = Fastify({
     logger: true
+});
+
+await fastify.register(cors, {
+    origin: true, // Allow frontend requests
+    credentials: true,
+});
+
+fastify.register(userRoutes, {
+    prefix: "/api/deployments"
 });
 
 fastify.get("/", async function (reqeust, reply) {

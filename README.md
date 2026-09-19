@@ -1,159 +1,174 @@
-# Turborepo starter
+# Shikigami
 
-This Turborepo starter is maintained by the Turborepo core team.
+> **A Vercel-like deployment platform for AI agents** — connect a GitHub repo, configure your runtime, and ship to Kubernetes in one click.
 
-## Using this example
+Shikigami automates the full lifecycle of AI agent deployment: cloning source code, building a container image in-cluster with Kaniko, pushing to a registry, and launching the agent as a running Kubernetes workload — all from a polished web UI.
 
-Run the following command:
+---
 
-```sh
-npx create-turbo@latest
+## Architecture
+
+```
+browser → Next.js frontend (port 3000)
+               ↓  REST
+         Fastify API (port 8080)
+               ↓           ↓
+          Prisma ORM    @kubernetes/client-node
+               ↓                  ↓
+          PostgreSQL       Kubernetes cluster
+                          ┌───────────────────┐
+                          │  Kaniko Job        │  (build)
+                          │  Agent Deployment  │  (run)
+                          └───────────────────┘
 ```
 
-## What's inside?
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16, Tailwind CSS, TypeScript |
+| Backend API | Fastify 5, Zod, TypeScript |
+| ORM / DB | Prisma + PostgreSQL |
+| Build pipeline | [Kaniko](https://github.com/GoogleContainerTools/kaniko) (in-cluster image builds) |
+| Runtime orchestration | Kubernetes (`batch/v1 Job` → `apps/v1 Deployment`) |
+| Monorepo tooling | Turborepo, npm workspaces |
+| Auth | GitHub OAuth |
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
+## Repository Layout
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```
+shikigami/
+├── apps/
+│   ├── api/           # Fastify backend — REST API + K8s orchestration
+│   └── frontend/      # Next.js frontend — dashboard, deploy wizard
+├── packages/
+│   ├── db/            # Prisma schema + generated client (@repo/db)
+│   └── k8s/           # Shared K8s manifest helpers
+├── infra/             # Kubernetes YAML manifests (Kaniko job template, secrets)
+├── turbo.json
+└── package.json
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-npm exec turbo build
-npm exec turbo build
+## Prerequisites
+
+- **Node.js** ≥ 24, **npm** ≥ 10
+- **PostgreSQL** running locally (or a connection string in `.env`)
+- A **Kubernetes cluster** accessible via `~/.kube/config`
+  - [`cloud-provider-kind`](https://github.com/kubernetes-sigs/cloud-provider-kind) recommended for local dev
+- A **DockerHub** account + a K8s secret named `dockerhub-secret` in the `default` namespace
+- A **GitHub OAuth App** (Client ID + Secret) for authentication
+
+---
+
+## Local Development
+
+### 1. Install dependencies
+
+```bash
+npm install
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 2. Set up environment variables
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
+**`apps/api/.env`**
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/shikigami
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
+**`apps/frontend/.env.local`**
+```env
+GITHUB_CLIENT_ID=your_github_oauth_client_id
+GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
+GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback
+NEXTAUTH_SECRET=any_random_string
 ```
 
-### Develop
+### 3. Push the Prisma schema
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```bash
+cd packages/db
+npx prisma db push
 ```
 
-Without global `turbo`, use your package manager:
+### 4. Create the DockerHub K8s secret
 
-```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
+```bash
+kubectl create secret docker-registry dockerhub-secret \
+  --docker-username=YOUR_DOCKERHUB_USERNAME \
+  --docker-password=YOUR_DOCKERHUB_PASSWORD \
+  --docker-email=YOUR_EMAIL
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### 5. Start everything
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+```bash
+npm run dev
 ```
 
-Without global `turbo`:
+Turborepo starts both `apps/api` and `apps/frontend` concurrently.
 
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| API | http://localhost:8080 |
+
+---
+
+## Deployment Flow
+
+1. **Connect** — authenticate with GitHub and browse your repositories.
+2. **Configure** — select a framework preset (LangGraph, CrewAI, FastAPI, TypeScript AI SDK, AutoGen, or custom Dockerfile), set environment variables, compute resources, and branch.
+3. **Deploy** — the frontend calls `POST /api/deployments`. The API:
+   - Creates `Agent` + `Deployment` records in PostgreSQL
+   - Submits a **Kaniko Job** to Kubernetes to build and push the container image
+4. **Watch** — a background poller watches the Kaniko Job:
+   - On **success** → updates `Deployment.status` to `READY`, launches the agent as a K8s `Deployment` with all env vars injected from Postgres
+   - On **failure** → updates `Deployment.status` to `FAILED`
+5. **Monitor** — the `/deployments/[id]` page shows live build logs and pipeline status.
+
+---
+
+## Key API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/deployments` | Create a new deployment |
+| `GET` | `/api/deployments?userId=` | List all deployments for a user |
+| `GET` | `/api/deployments/:id/logs` | SSE stream of build logs |
+
+---
+
+## Database Schema
+
+```
+Agent          — one per repo/user combo (build config, env vars, compute settings)
+  └─ Deployment — one per deploy attempt (status, job name, url, timestamps)
+       └─ EnvVar — key/value pairs injected into the agent pod at runtime
 ```
 
-### Remote Caching
+Status transitions: `QUEUED → BUILDING → READY | FAILED`
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+---
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## Roadmap
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+- [ ] SSE log streaming from live Kaniko pod logs
+- [ ] Automatic status polling on the deployment detail page
+- [ ] Re-deploy on git push via GitHub webhooks
+- [ ] Custom domain support via Ingress
+- [ ] Multi-namespace isolation per user
+- [ ] Metrics + resource usage dashboard
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo login
-```
+## Contributing
 
-Without global `turbo`, use your package manager:
+Pull requests are welcome. Run `npm run check-types` before submitting.
 
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
+---
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+## License
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+MIT
