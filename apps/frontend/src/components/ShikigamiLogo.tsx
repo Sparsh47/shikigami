@@ -18,7 +18,7 @@ export function ShikigamiLogo({
             alt={alt}
             width={64}
             height={64}
-            className={`object-contain shrink-0 drop-shadow-[0_0_8px_rgba(139,92,246,0.35)] ${className}`}
+            className={`object-contain shrink-0 drop-shadow-[0_0_8px_rgba(201,107,62,0.25)] ${className}`}
             priority={priority}
         />
     );

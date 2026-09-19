@@ -1,18 +1,52 @@
 @import "tailwindcss";
 
-/* Claude-style color palette custom properties */
-@layer base {
-    :root {
-        --bg-base: #1a1714;
-        --bg-surface: #211e1a;
-        --bg-elevated: #2a2520;
-        --border: #2e2924;
-        --border-muted: #252118;
-        --text-heading: #e8ddd5;
-        --text-body: #c4b8b0;
-        --text-muted: #7a6e66;
-        --accent: #c96b3e;
-        --accent-hover: #b85e34;
-        --accent-subtle: rgba(201,107,62,0.1);
-    }
+:root {
+    --bg-base: #1a1714;
+    --bg-surface: #211e1a;
+    --bg-elevated: #2a2520;
+    --border: #2e2924;
+    --border-muted: #252118;
+    --text-heading: #e8ddd5;
+    --text-body: #c4b8b0;
+    --text-muted: #7a6e66;
+    --accent: #c96b3e;
+    --accent-hover: #b85e34;
+    --accent-subtle: rgba(201, 107, 62, 0.1);
 }
+
+/* Global scrollbars styled to match the Claude warm dark palette */
+html,
+body,
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #3e3730 transparent;
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #38322b;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #c96b3e;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #b85e34;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
