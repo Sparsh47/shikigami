@@ -14,7 +14,7 @@ export function ShikigamiLogo({
 }: ShikigamiLogoProps) {
     return (
         <Image
-            src="/logo.png"
+            src="/shikigami.png"
             alt={alt}
             width={64}
             height={64}

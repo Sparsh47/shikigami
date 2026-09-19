@@ -22,7 +22,6 @@ interface ProfileModalProps {
 }
 
 export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
-    // Handle ESC key to close
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") onClose();
@@ -47,33 +46,43 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
         : null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            {/* Backdrop click */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            {/* Backdrop */}
             <div className="absolute inset-0" onClick={onClose} />
 
-            {/* Modal Card */}
-            <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl transition-all dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100">
-                {/* Header Banner */}
-                <div className="relative h-28 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+            {/* Modal */}
+            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[#2e2924] bg-[#211e1a] shadow-2xl shadow-black/60">
+                {/* Header strip */}
+                <div
+                    className="h-24 relative flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #1a1714 0%, #2a1f18 50%, #1a1714 100%)" }}
+                >
+                    {/* Subtle glow */}
+                    <div
+                        className="absolute inset-0 opacity-30"
+                        style={{ background: "radial-gradient(ellipse at 30% 50%, #c96b3e44 0%, transparent 70%)" }}
+                    />
+
                     <button
                         onClick={onClose}
-                        aria-label="Close profile modal"
-                        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+                        aria-label="Close profile"
+                        className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-[#2e2924]/80 text-[#7a6e66] backdrop-blur-sm transition-colors hover:bg-[#2e2924] hover:text-[#e8ddd5]"
                     >
                         <X className="h-4 w-4" />
                     </button>
                 </div>
 
-                {/* Avatar & Main Identity */}
-                <div className="relative px-6 pb-6 pt-0">
-                    <div className="-mt-14 mb-4 flex items-end justify-between">
+                {/* Content */}
+                <div className="px-6 pb-6 pt-0">
+                    {/* Avatar row */}
+                    <div className="-mt-12 mb-4 flex items-end justify-between">
                         <div className="relative">
                             <img
                                 src={user.avatar_url}
                                 alt={user.login}
-                                className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-lg dark:border-zinc-950"
+                                className="h-20 w-20 rounded-2xl border-4 border-[#211e1a] object-cover shadow-lg"
                             />
-                            <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 dark:border-zinc-950" />
+                            <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full border-2 border-[#211e1a] bg-emerald-500" />
                         </div>
 
                         {user.html_url && (
@@ -81,93 +90,80 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                                 href={user.html_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] px-3 py-1.5 text-xs font-medium text-[#c4b8b0] transition-colors hover:border-[#c96b3e]/40 hover:text-[#e8ddd5]"
                             >
-                                GitHub Profile
-                                <ExternalLink className="h-3.5 w-3.5" />
+                                GitHub
+                                <ExternalLink className="h-3 w-3" />
                             </a>
                         )}
                     </div>
 
-                    {/* Name & Login */}
+                    {/* Name + login */}
                     <div>
-                        <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                        <h2 className="text-xl font-semibold text-[#e8ddd5]">
                             {user.name ?? user.login}
                         </h2>
-                        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                            @{user.login}
-                        </p>
+                        <p className="text-sm text-[#7a6e66]">@{user.login}</p>
                     </div>
 
                     {/* Bio */}
                     {user.bio && (
-                        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
-                            {user.bio}
-                        </p>
+                        <p className="mt-3 text-sm text-[#c4b8b0] leading-relaxed">{user.bio}</p>
                     )}
 
-                    {/* Quick Stats Grid */}
-                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl border border-zinc-100 bg-zinc-50/80 p-3 text-center dark:border-zinc-800/80 dark:bg-zinc-900/50">
-                        <div className="flex flex-col items-center justify-center p-1">
-                            <span className="flex items-center gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                <BookMarked className="h-3.5 w-3.5 text-indigo-500" />
-                                Repos
-                            </span>
-                            <span className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                                {user.public_repos}
-                            </span>
-                        </div>
-                        <div className="flex flex-col items-center justify-center p-1 border-x border-zinc-200 dark:border-zinc-800">
-                            <span className="flex items-center gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                <Users className="h-3.5 w-3.5 text-purple-500" />
-                                Followers
-                            </span>
-                            <span className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                                {user.followers}
-                            </span>
-                        </div>
-                        <div className="flex flex-col items-center justify-center p-1">
-                            <span className="flex items-center gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                <UserCheck className="h-3.5 w-3.5 text-pink-500" />
-                                Following
-                            </span>
-                            <span className="mt-1 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-                                {user.following}
-                            </span>
-                        </div>
+                    {/* Stats row */}
+                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl border border-[#2e2924] bg-[#1a1714] p-3 text-center">
+                        {[
+                            { Icon: BookMarked, label: "Repos", value: user.public_repos },
+                            { Icon: Users, label: "Followers", value: user.followers },
+                            { Icon: UserCheck, label: "Following", value: user.following },
+                        ].map(({ Icon, label, value }, idx) => (
+                            <div
+                                key={label}
+                                className={`flex flex-col items-center justify-center p-1 ${idx === 1 ? "border-x border-[#2e2924]" : ""}`}
+                            >
+                                <span className="flex items-center gap-1 text-[10px] font-medium text-[#7a6e66]">
+                                    <Icon className="h-3 w-3 text-[#c96b3e]" />
+                                    {label}
+                                </span>
+                                <span className="mt-1 text-base font-semibold text-[#e8ddd5]">
+                                    {value}
+                                </span>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Details List */}
-                    <div className="mt-5 space-y-2.5 text-xs text-zinc-600 dark:text-zinc-400">
+                    {/* Details */}
+                    <div className="mt-5 space-y-2.5 text-xs text-[#7a6e66]">
                         <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-zinc-400" />
-                            <span>{user.email ? user.email : "No public email available"}</span>
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
+                            <span>{user.email ?? "No public email"}</span>
                         </div>
 
                         {user.company && (
                             <div className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4 text-zinc-400" />
+                                <Building2 className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
                                 <span>{user.company}</span>
                             </div>
                         )}
 
                         {user.location && (
                             <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-zinc-400" />
+                                <MapPin className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
                                 <span>{user.location}</span>
                             </div>
                         )}
 
                         {user.twitter_username && (
                             <div className="flex items-center gap-2">
-                                <AtSign className="h-4 w-4 text-zinc-400" />
+                                <AtSign className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
                                 <span>@{user.twitter_username}</span>
                             </div>
                         )}
 
                         {formattedDate && (
                             <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-zinc-400" />
+                                <Calendar className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
                                 <span>Joined GitHub {formattedDate}</span>
                             </div>
                         )}

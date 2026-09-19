@@ -20,7 +20,6 @@ export function Navbar({ user: initialUser }: NavbarProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
-    // Fetch user if not passed from parent
     useEffect(() => {
         if (initialUser !== undefined) {
             setUser(initialUser);
@@ -34,7 +33,6 @@ export function Navbar({ user: initialUser }: NavbarProps) {
         return () => { isMounted = false; };
     }, [initialUser]);
 
-    // Close dropdown on outside click
     useEffect(() => {
         function onClickOutside(e: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -59,55 +57,53 @@ export function Navbar({ user: initialUser }: NavbarProps) {
 
     return (
         <>
-            <header className="sticky top-0 z-40 w-full border-b border-zinc-100 bg-white/80 backdrop-blur-lg dark:border-zinc-800/60 dark:bg-zinc-950/80">
-                <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+            <header className="sticky top-0 z-40 w-full border-b border-[#2e2924] bg-[#1a1714]/90 backdrop-blur-md">
+                <div className="mx-auto flex h-13 max-w-6xl items-center justify-between px-4 sm:px-6 py-3">
 
                     {/* Brand */}
                     <Link
                         href={user ? "/dashboard" : "/"}
                         className="group flex items-center gap-2.5"
                     >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/10 to-purple-500/10 ring-1 ring-zinc-200 transition-transform group-hover:scale-105 dark:ring-zinc-800">
-                            <ShikigamiLogo className="h-5 w-5" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c96b3e]/10 ring-1 ring-[#2e2924] transition-transform group-hover:scale-105">
+                            <ShikigamiLogo className="h-4.5 w-4.5" />
                         </div>
-                        <span className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                        <span className="text-sm font-semibold tracking-tight text-[#e8ddd5]">
                             Shikigami
                         </span>
                     </Link>
 
-                    {/* Right: Avatar dropdown or login */}
+                    {/* Right */}
                     <div className="flex items-center">
                         {user ? (
                             <div className="relative" ref={dropdownRef}>
-                                {/* Avatar trigger */}
                                 <button
                                     onClick={() => setIsDropdownOpen((p) => !p)}
                                     aria-label="User menu"
                                     aria-expanded={isDropdownOpen}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full ring-2 ring-transparent transition-all hover:ring-indigo-500/40 focus:outline-none"
+                                    className="flex h-7 w-7 items-center justify-center rounded-full ring-2 ring-transparent transition-all hover:ring-[#c96b3e]/40 focus:outline-none"
                                 >
                                     <img
                                         src={user.avatar_url}
                                         alt={user.login}
-                                        className="h-8 w-8 rounded-full object-cover"
+                                        className="h-7 w-7 rounded-full object-cover"
                                     />
                                 </button>
 
-                                {/* Dropdown */}
                                 {isDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-52 origin-top-right rounded-xl border border-zinc-100 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
-                                        {/* Identity header */}
-                                        <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-zinc-100 dark:border-zinc-800">
+                                    <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-[#2e2924] bg-[#211e1a] shadow-xl shadow-black/40">
+                                        {/* Identity */}
+                                        <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-[#2e2924]">
                                             <img
                                                 src={user.avatar_url}
                                                 alt={user.login}
                                                 className="h-7 w-7 rounded-full object-cover"
                                             />
                                             <div className="min-w-0">
-                                                <p className="truncate text-[13px] font-medium text-zinc-900 dark:text-zinc-100">
+                                                <p className="truncate text-xs font-medium text-[#e8ddd5]">
                                                     {user.name ?? user.login}
                                                 </p>
-                                                <p className="truncate text-[11px] text-zinc-400 dark:text-zinc-500">
+                                                <p className="truncate text-[10px] text-[#7a6e66]">
                                                     @{user.login}
                                                 </p>
                                             </div>
@@ -120,7 +116,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                                     setIsDropdownOpen(false);
                                                     setIsProfileOpen(true);
                                                 }}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[#c4b8b0] transition-colors hover:bg-[#2e2924] hover:text-[#e8ddd5]"
                                             >
                                                 <User className="h-3.5 w-3.5" />
                                                 View Profile
@@ -129,13 +125,13 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                             <Link
                                                 href="/settings"
                                                 onClick={() => setIsDropdownOpen(false)}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[#c4b8b0] transition-colors hover:bg-[#2e2924] hover:text-[#e8ddd5]"
                                             >
                                                 <Settings className="h-3.5 w-3.5" />
                                                 Settings
                                             </Link>
 
-                                            <div className="my-1 h-px bg-zinc-100 dark:bg-zinc-800" />
+                                            <div className="my-1 h-px bg-[#2e2924]" />
 
                                             <button
                                                 onClick={() => {
@@ -143,7 +139,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                                     handleLogout();
                                                 }}
                                                 disabled={isLoggingOut}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 disabled:opacity-50"
+                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[#c96b3e]/80 transition-colors hover:bg-[#c96b3e]/10 hover:text-[#c96b3e] disabled:opacity-50"
                                             >
                                                 <LogOut className="h-3.5 w-3.5" />
                                                 {isLoggingOut ? "Logging out…" : "Log out"}
@@ -155,7 +151,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                         ) : (
                             <Link
                                 href="/api/auth/github"
-                                className="rounded-lg bg-zinc-900 px-3.5 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                                className="rounded-lg bg-[#c96b3e] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#b85e34]"
                             >
                                 Sign in
                             </Link>

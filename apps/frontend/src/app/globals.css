@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+/* Claude-style color palette custom properties */
+@layer base {
+    :root {
+        --bg-base: #1a1714;
+        --bg-surface: #211e1a;
+        --bg-elevated: #2a2520;
+        --border: #2e2924;
+        --border-muted: #252118;
+        --text-heading: #e8ddd5;
+        --text-body: #c4b8b0;
+        --text-muted: #7a6e66;
+        --accent: #c96b3e;
+        --accent-hover: #b85e34;
+        --accent-subtle: rgba(201,107,62,0.1);
+    }
+}
