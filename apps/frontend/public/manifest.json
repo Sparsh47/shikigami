@@ -8,12 +8,12 @@
   "theme_color": "#09090b",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/shikigami.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/favicon-64.png",
+      "src": "/shikigami.png",
       "sizes": "64x64",
       "type": "image/png"
     },
@@ -23,7 +23,7 @@
       "type": "image/png"
     },
     {
-      "src": "/icon.png",
+      "src": "/shikigami.png",
       "sizes": "512x512",
       "type": "image/png"
     }

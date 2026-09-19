@@ -20,6 +20,8 @@ import {
     AlertCircle,
 } from "lucide-react";
 
+import { AgentDeployment } from "@/types/repo";
+
 type DeployStatus = "ready" | "building" | "failed" | "queued";
 
 export default function Dashboard() {
@@ -27,6 +29,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | DeployStatus>("all");
+    const [deployments, setDeployments] = useState<AgentDeployment[]>([]);
 
     useEffect(() => {
         async function loadUser() {
@@ -42,6 +45,16 @@ export default function Dashboard() {
             }
         }
         loadUser();
+
+        // Load deployments saved from configure page
+        try {
+            const saved = localStorage.getItem("shikigami_deployments");
+            if (saved) {
+                setDeployments(JSON.parse(saved));
+            }
+        } catch (e) {
+            console.error("Failed to load deployments:", e);
+        }
     }, []);
 
     if (loading) {
@@ -136,23 +149,95 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Empty state — no sample data */}
-                <div className="rounded-2xl border border-dashed border-[#2e2924] py-20 text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#211e1a] text-[#7a6e66] mb-4">
-                        <Layers className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-[#e8ddd5]">No deployments yet</h3>
-                    <p className="mt-1.5 text-xs text-[#7a6e66] max-w-xs mx-auto leading-relaxed">
-                        Connect a GitHub repository to deploy your first AI agent runtime.
-                    </p>
-                    <Link
-                        href="/new"
-                        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#c96b3e] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#b85e34] shadow-sm"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Add New Agent
-                    </Link>
-                </div>
+                {/* Deployments List or Empty state */}
+                {(() => {
+                    const filtered = deployments.filter((d) => {
+                        const matchesQuery =
+                            d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            d.repo.toLowerCase().includes(searchQuery.toLowerCase());
+                        const matchesStatus = statusFilter === "all" || d.status === statusFilter;
+                        return matchesQuery && matchesStatus;
+                    });
+
+                    if (filtered.length === 0) {
+                        return (
+                            <div className="rounded-2xl border border-dashed border-[#2e2924] py-20 text-center">
+                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#211e1a] text-[#7a6e66] mb-4">
+                                    <Layers className="h-5 w-5" />
+                                </div>
+                                <h3 className="text-sm font-semibold text-[#e8ddd5]">
+                                    {searchQuery ? "No matching deployments" : "No deployments yet"}
+                                </h3>
+                                <p className="mt-1.5 text-xs text-[#7a6e66] max-w-xs mx-auto leading-relaxed">
+                                    {searchQuery
+                                        ? "Try a different search keyword or status filter."
+                                        : "Connect a GitHub repository to deploy your first AI agent runtime."}
+                                </p>
+                                <Link
+                                    href="/new"
+                                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#c96b3e] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#b85e34] shadow-sm"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Add New Agent
+                                </Link>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="space-y-4">
+                            {filtered.map((dep) => (
+                                <div
+                                    key={dep.id}
+                                    className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 transition-all hover:border-[#c96b3e]/40"
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center gap-2.5 flex-wrap">
+                                                <h3 className="text-base font-semibold text-[#e8ddd5]">
+                                                    {dep.name}
+                                                </h3>
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/20">
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                                    Ready
+                                                </span>
+                                                <span className="rounded-md bg-[#1a1714] px-2 py-0.5 text-[11px] font-medium text-[#7a6e66] border border-[#2e2924]">
+                                                    {dep.framework}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3 text-xs text-[#7a6e66] flex-wrap">
+                                                <span className="inline-flex items-center gap-1">
+                                                    <GitBranch className="h-3 w-3 text-[#7a6e66]" />
+                                                    {dep.branch}
+                                                </span>
+                                                <span>•</span>
+                                                <span className="font-mono text-[11px]">{dep.repo}</span>
+                                                <span>•</span>
+                                                <span className="inline-flex items-center gap-1 font-mono text-[11px]">
+                                                    <GitCommit className="h-3 w-3 text-[#7a6e66]" />
+                                                    {dep.commitSha}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 self-start sm:self-auto">
+                                            <a
+                                                href={dep.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] px-3.5 py-2 text-xs font-medium text-[#e8ddd5] hover:border-[#c96b3e]/40 hover:text-white transition-colors"
+                                            >
+                                                Visit
+                                                <ExternalLink className="h-3 w-3 text-[#7a6e66]" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })()}
             </main>
         </div>
     );

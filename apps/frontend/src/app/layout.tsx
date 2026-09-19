@@ -20,15 +20,15 @@ export const metadata: Metadata = {
   authors: [{ name: "Shikigami" }],
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon-64.png", type: "image/png", sizes: "64x64" },
-      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/shikigami.ico", sizes: "any" },
+      { url: "/shikigami.png", type: "image/png", sizes: "32x32" },
+      { url: "/shikigami.png", type: "image/png", sizes: "64x64" },
+      { url: "/shikigami.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [
       { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/shikigami.ico",
   },
   manifest: "/manifest.json",
   openGraph: {
