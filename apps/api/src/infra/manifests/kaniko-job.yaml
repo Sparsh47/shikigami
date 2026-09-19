@@ -11,11 +11,19 @@ spec:
         - name: kaniko
           image: gcr.io/kaniko-project/executor:latest
           args:
+            # 1. Where your source code is located (Your GitHub repo)
             - "--context=git://github.com/Sparsh47/shikigami-test-repo.git#refs/heads/main"
+
+            # 2. Path to the Dockerfile inside that repo (relative to repo root)
             - "--dockerfile=Dockerfile"
+
+            # 3. Where to push the resulting image
             - "--destination=jestico/shikigami-test-app:v1.0"
+
+            # 4. Optional optimization: enables layer caching
             - "--cache=true"
           volumeMounts:
+            # Mount the DockerHub secret so Kaniko can authenticate
             - name: docker-config
               mountPath: /kaniko/.docker
       volumes:
@@ -23,5 +31,6 @@ spec:
           secret:
             secretName: dockerhub-secret
             items:
+              # Maps the .dockerconfigjson key in your secret to config.json
               - key: .dockerconfigjson
                 path: config.json

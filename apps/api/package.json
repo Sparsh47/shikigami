@@ -14,8 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@kubernetes/client-node": "^2.0.0",
+    "@repo/db": "*",
     "fastify": "^5.12.4",
-    "@repo/db": "*"
+    "js-yaml": "^5.4.2"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",
