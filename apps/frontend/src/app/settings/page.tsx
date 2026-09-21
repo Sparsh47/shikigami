@@ -60,7 +60,7 @@ export default function SettingsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#1a1714] flex flex-col">
+            <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
@@ -72,38 +72,38 @@ export default function SettingsPage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-[#1a1714] text-[#c4b8b0] flex flex-col">
+        <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] flex flex-col">
             <Navbar user={user} />
 
             <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
 
                 {/* Page title */}
                 <div className="mb-8">
-                    <p className="text-xs font-medium uppercase tracking-widest text-[#7a6e66] mb-1.5">
+                    <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-muted)] mb-1.5">
                         Account
                     </p>
-                    <h1 className="text-2xl font-semibold text-[#e8ddd5]">Settings</h1>
-                    <p className="mt-1 text-sm text-[#7a6e66]">
+                    <h1 className="text-2xl font-semibold text-[var(--text-heading)]">Settings</h1>
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
                         Manage your connected accounts, authorizations, and security settings.
                     </p>
                 </div>
 
                 <div className="space-y-4">
                     {/* GitHub Integration Card */}
-                    <div className="overflow-hidden rounded-2xl border border-[#2e2924] bg-[#211e1a]">
+                    <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]">
                         {/* Card header */}
-                        <div className="border-b border-[#2e2924] px-6 py-4 flex items-center justify-between">
+                        <div className="border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1a1714] border border-[#2e2924] text-[#e8ddd5]">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--bg-base)] border border-[var(--border)] text-[var(--text-heading)]">
                                     <GithubIcon className="h-4.5 w-4.5" />
                                 </div>
                                 <div>
-                                    <h2 className="text-sm font-semibold text-[#e8ddd5]">
+                                    <h2 className="text-sm font-semibold text-[var(--text-heading)]">
                                         GitHub Authorization
                                     </h2>
-                                    <p className="text-xs text-[#7a6e66]">
+                                    <p className="text-xs text-[var(--text-muted)]">
                                         Connected as{" "}
-                                        <span className="font-medium text-[#c4b8b0]">@{user.login}</span>
+                                        <span className="font-medium text-[var(--text-body)]">@{user.login}</span>
                                     </p>
                                 </div>
                             </div>
@@ -118,10 +118,10 @@ export default function SettingsPage() {
                         <div className="px-6 py-5 space-y-5">
                             {/* Scopes */}
                             <div>
-                                <h3 className="text-xs font-medium text-[#c4b8b0] mb-2">
+                                <h3 className="text-xs font-medium text-[var(--text-body)] mb-2">
                                     Active OAuth Scopes
                                 </h3>
-                                <p className="text-xs text-[#7a6e66] mb-3">
+                                <p className="text-xs text-[var(--text-muted)] mb-3">
                                     Shikigami is authorized with these scopes to automate your build deployments:
                                 </p>
                                 <div className="flex flex-wrap gap-2">
@@ -132,7 +132,7 @@ export default function SettingsPage() {
                                     ].map(({ label, Icon }) => (
                                         <span
                                             key={label}
-                                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#2e2924] bg-[#1a1714] px-2.5 py-1 text-xs font-mono text-[#c4b8b0]"
+                                            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-1 text-xs font-mono text-[var(--text-body)]"
                                         >
                                             <Icon className="h-3 w-3 text-[#c96b3e]" />
                                             {label}
@@ -180,22 +180,22 @@ export default function SettingsPage() {
             {/* Confirmation modal */}
             {showConfirmModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-                    <div className="relative w-full max-w-md rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 shadow-2xl shadow-black/60">
+                    <div className="relative w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 shadow-2xl shadow-black/60">
                         <div className="flex items-start gap-3 mb-4">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/10 text-rose-400 border border-rose-900/30">
                                 <AlertTriangle className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-base font-semibold text-[#e8ddd5]">
+                                <h3 className="text-base font-semibold text-[var(--text-heading)]">
                                     Revoke GitHub Authorization?
                                 </h3>
-                                <p className="text-xs text-[#7a6e66] mt-0.5">
+                                <p className="text-xs text-[var(--text-muted)] mt-0.5">
                                     This action cannot be undone without re-authorizing.
                                 </p>
                             </div>
                         </div>
 
-                        <p className="text-sm text-[#7a6e66] leading-relaxed">
+                        <p className="text-sm text-[var(--text-muted)] leading-relaxed">
                             Are you sure you want to disconnect your account? You will be logged out and will need to authorize Shikigami again to access repositories and build triggers.
                         </p>
 
@@ -204,7 +204,7 @@ export default function SettingsPage() {
                                 type="button"
                                 onClick={() => setShowConfirmModal(false)}
                                 disabled={isRevoking}
-                                className="rounded-xl border border-[#2e2924] px-4 py-2 text-xs font-medium text-[#7a6e66] hover:bg-[#2e2924] hover:text-[#e8ddd5] transition-colors disabled:opacity-50"
+                                className="rounded-xl border border-[var(--border)] px-4 py-2 text-xs font-medium text-[var(--text-muted)] hover:bg-[var(--border)] hover:text-[var(--text-heading)] transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>

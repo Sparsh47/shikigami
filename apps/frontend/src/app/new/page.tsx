@@ -100,7 +100,7 @@ export default function NewAgentPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#1a1714] text-[#e8ddd5] flex flex-col">
+        <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-heading)] flex flex-col">
             <Navbar user={user} />
 
             <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:px-6 lg:px-8 space-y-8">
@@ -109,32 +109,32 @@ export default function NewAgentPage() {
                 <div>
                     <Link
                         href="/dashboard"
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#7a6e66] hover:text-[#e8ddd5] transition-colors mb-5"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors mb-5"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" />
                         Back to Deployments
                     </Link>
 
-                    <h1 className="text-2xl font-semibold tracking-tight text-[#e8ddd5]">
+                    <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-heading)]">
                         Deploy a new agent
                     </h1>
-                    <p className="mt-1.5 text-sm text-[#7a6e66]">
+                    <p className="mt-1.5 text-sm text-[var(--text-muted)]">
                         Import a Git repository and launch your agent runtime with Kaniko container builds.
                     </p>
                 </div>
 
                 {/* Import Repository Card */}
-                <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] overflow-hidden">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
 
                     {/* Card Header */}
-                    <div className="border-b border-[#2e2924] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="border-b border-[var(--border)] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
                             <FolderGit2 className="h-4 w-4 text-[#c96b3e]" />
-                            <h2 className="text-sm font-semibold text-[#e8ddd5]">Import Git Repository</h2>
+                            <h2 className="text-sm font-semibold text-[var(--text-heading)]">Import Git Repository</h2>
                         </div>
 
                         {user && (
-                            <div className="inline-flex items-center gap-2 rounded-lg border border-[#2e2924] bg-[#1a1714] px-3 py-1.5 text-xs font-medium text-[#7a6e66]">
+                            <div className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)]">
                                 <img
                                     src={user.avatar_url}
                                     alt={user.login}
@@ -146,27 +146,27 @@ export default function NewAgentPage() {
                     </div>
 
                     {/* Search + Filter */}
-                    <div className="px-6 py-4 border-b border-[#2e2924] bg-[#1a1714]/40">
+                    <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-base)]/40">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#7a6e66]" />
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search repositories..."
-                                    className="w-full rounded-xl border border-[#2e2924] bg-[#211e1a] py-2 pl-9 pr-4 text-sm text-[#e8ddd5] placeholder:text-[#7a6e66] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
                                 />
                             </div>
 
-                            <div className="flex items-center gap-1 rounded-xl border border-[#2e2924] bg-[#211e1a] p-1 shrink-0">
+                            <div className="flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-1 shrink-0">
                                 {(["all", "public", "private"] as const).map((type) => (
                                     <button
                                         key={type}
                                         onClick={() => setFilterType(type)}
                                         className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${filterType === type
                                             ? "bg-[#c96b3e] text-white"
-                                            : "text-[#7a6e66] hover:text-[#e8ddd5]"
+                                            : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
                                             }`}
                                     >
                                         {type}
@@ -177,19 +177,19 @@ export default function NewAgentPage() {
                     </div>
 
                     {/* Repository List */}
-                    <div className="divide-y divide-[#2e2924] max-h-100 overflow-y-auto">
+                    <div className="divide-y divide-[var(--border)] max-h-100 overflow-y-auto">
                         {reposLoading ? (
                             <div className="py-14 text-center">
                                 <Loader2 className="mx-auto h-5 w-5 animate-spin text-[#c96b3e]" />
-                                <p className="mt-3 text-xs text-[#7a6e66]">Loading repositories…</p>
+                                <p className="mt-3 text-xs text-[var(--text-muted)]">Loading repositories…</p>
                             </div>
                         ) : filteredRepos.length === 0 ? (
                             <div className="py-14 text-center">
-                                <Search className="mx-auto h-7 w-7 text-[#7a6e66] mb-3" />
-                                <p className="text-sm font-medium text-[#c4b8b0]">
+                                <Search className="mx-auto h-7 w-7 text-[var(--text-muted)] mb-3" />
+                                <p className="text-sm font-medium text-[var(--text-body)]">
                                     {searchQuery ? `No results for "${searchQuery}"` : "No repositories found"}
                                 </p>
-                                <p className="mt-1 text-xs text-[#7a6e66]">
+                                <p className="mt-1 text-xs text-[var(--text-muted)]">
                                     {searchQuery ? "Try a different search term." : "Connect your GitHub account to see your repositories."}
                                 </p>
                             </div>
@@ -197,10 +197,10 @@ export default function NewAgentPage() {
                             filteredRepos.map((repo) => (
                                 <div
                                     key={repo.id}
-                                    className="flex items-center justify-between gap-4 px-6 py-3.5 transition-colors hover:bg-[#1a1714]/60"
+                                    className="flex items-center justify-between gap-4 px-6 py-3.5 transition-colors hover:bg-[var(--bg-base)]/60"
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#1a1714] text-[#7a6e66] border border-[#2e2924]">
+                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-base)] text-[var(--text-muted)] border border-[var(--border)]">
                                             {repo.private ? (
                                                 <Lock className="h-3 w-3" />
                                             ) : (
@@ -210,17 +210,17 @@ export default function NewAgentPage() {
 
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-[#e8ddd5] truncate">
+                                                <span className="text-sm font-medium text-[var(--text-heading)] truncate">
                                                     {repo.name}
                                                 </span>
                                                 {repo.private && (
-                                                    <span className="rounded bg-[#2e2924] px-1.5 py-0.5 text-[10px] font-medium text-[#7a6e66]">
+                                                    <span className="rounded bg-[var(--border)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
                                                         Private
                                                     </span>
                                                 )}
                                             </div>
 
-                                            <div className="mt-0.5 flex items-center gap-2.5 text-[11px] text-[#7a6e66]">
+                                            <div className="mt-0.5 flex items-center gap-2.5 text-[11px] text-[var(--text-muted)]">
                                                 {repo.language && (
                                                     <span className="flex items-center gap-1">
                                                         <span className="h-1.5 w-1.5 rounded-full bg-[#c96b3e]" />
@@ -234,10 +234,10 @@ export default function NewAgentPage() {
 
                                     <button
                                         onClick={() => handleImportRepo(repo)}
-                                        className="shrink-0 rounded-lg bg-[#2e2924] px-3.5 py-1.5 text-xs font-medium text-[#c4b8b0] hover:bg-[#c96b3e] hover:text-white transition-all inline-flex items-center gap-1.5 cursor-pointer group/btn"
+                                        className="shrink-0 rounded-lg bg-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-body)] hover:bg-[#c96b3e] hover:text-white transition-all inline-flex items-center gap-1.5 cursor-pointer group/btn"
                                     >
                                         <span>Import</span>
-                                        <ArrowRight className="h-3 w-3 text-[#7a6e66] group-hover/btn:text-white group-hover/btn:translate-x-0.5 transition-transform" />
+                                        <ArrowRight className="h-3 w-3 text-[var(--text-muted)] group-hover/btn:text-white group-hover/btn:translate-x-0.5 transition-transform" />
                                     </button>
                                 </div>
                             ))
@@ -245,10 +245,10 @@ export default function NewAgentPage() {
                     </div>
 
                     {/* Custom Git URL Footer */}
-                    <div className="border-t border-[#2e2924] px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#1a1714]/30">
+                    <div className="border-t border-[var(--border)] px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--bg-base)]/30">
                         <div className="flex items-center gap-2">
-                            <Code2 className="h-3.5 w-3.5 text-[#7a6e66]" />
-                            <span className="text-xs text-[#7a6e66]">
+                            <Code2 className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+                            <span className="text-xs text-[var(--text-muted)]">
                                 Import from a third-party Git URL
                             </span>
                         </div>
@@ -261,12 +261,12 @@ export default function NewAgentPage() {
                                     if (e.key === "Enter") handleCustomImport();
                                 }}
                                 placeholder="https://github.com/org/repo.git"
-                                className="rounded-lg border border-[#2e2924] bg-[#211e1a] px-3 py-1.5 text-xs text-[#e8ddd5] placeholder:text-[#7a6e66] focus:outline-none focus:border-[#c96b3e]/50 transition-colors w-56"
+                                className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#c96b3e]/50 transition-colors w-56"
                             />
                             <button
                                 onClick={handleCustomImport}
                                 disabled={!customGitUrl.trim()}
-                                className="rounded-lg bg-[#2e2924] px-3.5 py-1.5 text-xs font-medium text-[#c4b8b0] hover:bg-[#c96b3e] hover:text-white disabled:opacity-40 disabled:hover:bg-[#2e2924] disabled:hover:text-[#c4b8b0] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                className="rounded-lg bg-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-body)] hover:bg-[#c96b3e] hover:text-white disabled:opacity-40 disabled:hover:bg-[var(--border)] disabled:hover:text-[var(--text-body)] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                             >
                                 <span>Import</span>
                                 <ArrowRight className="h-3 w-3" />

@@ -51,7 +51,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
             <div className="absolute inset-0" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[#2e2924] bg-[#211e1a] shadow-2xl shadow-black/60">
+            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-2xl shadow-black/60">
                 {/* Header strip */}
                 <div
                     className="h-24 relative flex-shrink-0"
@@ -66,7 +66,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                     <button
                         onClick={onClose}
                         aria-label="Close profile"
-                        className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-[#2e2924]/80 text-[#7a6e66] backdrop-blur-sm transition-colors hover:bg-[#2e2924] hover:text-[#e8ddd5]"
+                        className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--border)]/80 text-[var(--text-muted)] backdrop-blur-sm transition-colors hover:bg-[var(--border)] hover:text-[var(--text-heading)]"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -80,9 +80,9 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                             <img
                                 src={user.avatar_url}
                                 alt={user.login}
-                                className="h-20 w-20 rounded-2xl border-4 border-[#211e1a] object-cover shadow-lg"
+                                className="h-20 w-20 rounded-2xl border-4 border-[var(--bg-surface)] object-cover shadow-lg"
                             />
-                            <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full border-2 border-[#211e1a] bg-emerald-500" />
+                            <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full border-2 border-[var(--bg-surface)] bg-emerald-500" />
                         </div>
 
                         {user.html_url && (
@@ -90,7 +90,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                                 href={user.html_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] px-3 py-1.5 text-xs font-medium text-[#c4b8b0] transition-colors hover:border-[#c96b3e]/40 hover:text-[#e8ddd5]"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] transition-colors hover:border-[#c96b3e]/40 hover:text-[var(--text-heading)]"
                             >
                                 GitHub
                                 <ExternalLink className="h-3 w-3" />
@@ -100,19 +100,19 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
 
                     {/* Name + login */}
                     <div>
-                        <h2 className="text-xl font-semibold text-[#e8ddd5]">
+                        <h2 className="text-xl font-semibold text-[var(--text-heading)]">
                             {user.name ?? user.login}
                         </h2>
-                        <p className="text-sm text-[#7a6e66]">@{user.login}</p>
+                        <p className="text-sm text-[var(--text-muted)]">@{user.login}</p>
                     </div>
 
                     {/* Bio */}
                     {user.bio && (
-                        <p className="mt-3 text-sm text-[#c4b8b0] leading-relaxed">{user.bio}</p>
+                        <p className="mt-3 text-sm text-[var(--text-body)] leading-relaxed">{user.bio}</p>
                     )}
 
                     {/* Stats row */}
-                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl border border-[#2e2924] bg-[#1a1714] p-3 text-center">
+                    <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] p-3 text-center">
                         {[
                             { Icon: BookMarked, label: "Repos", value: user.public_repos },
                             { Icon: Users, label: "Followers", value: user.followers },
@@ -120,13 +120,13 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                         ].map(({ Icon, label, value }, idx) => (
                             <div
                                 key={label}
-                                className={`flex flex-col items-center justify-center p-1 ${idx === 1 ? "border-x border-[#2e2924]" : ""}`}
+                                className={`flex flex-col items-center justify-center p-1 ${idx === 1 ? "border-x border-[var(--border)]" : ""}`}
                             >
-                                <span className="flex items-center gap-1 text-[10px] font-medium text-[#7a6e66]">
+                                <span className="flex items-center gap-1 text-[10px] font-medium text-[var(--text-muted)]">
                                     <Icon className="h-3 w-3 text-[#c96b3e]" />
                                     {label}
                                 </span>
-                                <span className="mt-1 text-base font-semibold text-[#e8ddd5]">
+                                <span className="mt-1 text-base font-semibold text-[var(--text-heading)]">
                                     {value}
                                 </span>
                             </div>
@@ -134,7 +134,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                     </div>
 
                     {/* Details */}
-                    <div className="mt-5 space-y-2.5 text-xs text-[#7a6e66]">
+                    <div className="mt-5 space-y-2.5 text-xs text-[var(--text-muted)]">
                         <div className="flex items-center gap-2">
                             <Mail className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
                             <span>{user.email ?? "No public email"}</span>

@@ -45,16 +45,16 @@ const STEPS = [
 
 export default function Home() {
     return (
-        <div className="min-h-screen bg-[#1a1714] text-[#c4b8b0] overflow-x-hidden">
+        <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] overflow-x-hidden">
 
             {/* Navbar */}
-            <header className="border-b border-[#2e2924] backdrop-blur-md sticky top-0 z-40 bg-[#1a1714]/90">
+            <header className="border-b border-[var(--border)] backdrop-blur-md sticky top-0 z-40 bg-[var(--bg-base)]/90">
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
                     <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c96b3e]/10 ring-1 ring-[#2e2924]">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c96b3e]/10 ring-1 ring-[var(--border)]">
                             <ShikigamiLogo className="h-4.5 w-4.5" />
                         </div>
-                        <span className="text-sm font-semibold tracking-tight text-[#e8ddd5]">
+                        <span className="text-sm font-semibold tracking-tight text-[var(--text-heading)]">
                             Shikigami
                         </span>
                     </div>
@@ -83,7 +83,7 @@ export default function Home() {
                     Early Access — Now Available
                 </div>
 
-                <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-[#e8ddd5] sm:text-5xl lg:text-6xl leading-[1.1]">
+                <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-[var(--text-heading)] sm:text-5xl lg:text-6xl leading-[1.1]">
                     Deploy AI agents{" "}
                     <span
                         className="bg-clip-text text-transparent"
@@ -93,7 +93,7 @@ export default function Home() {
                     </span>
                 </h1>
 
-                <p className="mx-auto mt-6 max-w-xl text-base text-[#7a6e66] leading-relaxed">
+                <p className="mx-auto mt-6 max-w-xl text-base text-[var(--text-muted)] leading-relaxed">
                     Shikigami is the fastest way to ship AI agents to production.
                     Connect your GitHub repo, configure your agent, and get a live
                     API endpoint — in under a minute.
@@ -113,7 +113,7 @@ export default function Home() {
                         href="https://github.com/Sparsh47/shikigami"
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm text-[#7a6e66] transition-colors hover:text-[#c4b8b0] flex items-center justify-center gap-2"
+                        className="text-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-body)] flex items-center justify-center gap-2"
                     >
                         View source <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -123,12 +123,12 @@ export default function Home() {
                 <div className="mt-16 flex flex-wrap items-center justify-center gap-2">
                     {STEPS.map((s, idx) => (
                         <div key={s.step} className="flex items-center gap-2">
-                            <div className="flex items-center gap-2 rounded-full border border-[#2e2924] bg-[#211e1a] px-4 py-1.5">
+                            <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-1.5">
                                 <span className="text-[10px] font-mono text-[#c96b3e]">{s.step}</span>
-                                <span className="text-xs text-[#c4b8b0]">{s.label}</span>
+                                <span className="text-xs text-[var(--text-body)]">{s.label}</span>
                             </div>
                             {idx < STEPS.length - 1 && (
-                                <ArrowRight className="h-3 w-3 text-[#2e2924]" />
+                                <ArrowRight className="h-3 w-3 text-[var(--border)]" />
                             )}
                         </div>
                     ))}
@@ -137,15 +137,15 @@ export default function Home() {
 
             {/* Dashboard Preview */}
             <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-24">
-                <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] overflow-hidden shadow-2xl shadow-black/40">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden shadow-2xl shadow-black/40">
                     {/* Browser chrome */}
-                    <div className="border-b border-[#2e2924] px-4 py-3 flex items-center gap-3 bg-[#1a1714]">
+                    <div className="border-b border-[var(--border)] px-4 py-3 flex items-center gap-3 bg-[var(--bg-base)]">
                         <div className="flex gap-1.5">
-                            <span className="h-2.5 w-2.5 rounded-full bg-[#2e2924]" />
-                            <span className="h-2.5 w-2.5 rounded-full bg-[#2e2924]" />
-                            <span className="h-2.5 w-2.5 rounded-full bg-[#2e2924]" />
+                            <span className="h-2.5 w-2.5 rounded-full bg-[var(--border)]" />
+                            <span className="h-2.5 w-2.5 rounded-full bg-[var(--border)]" />
+                            <span className="h-2.5 w-2.5 rounded-full bg-[var(--border)]" />
                         </div>
-                        <div className="flex-1 max-w-xs mx-auto rounded-md border border-[#2e2924] bg-[#211e1a] px-3 py-1 text-center text-[11px] text-[#7a6e66]">
+                        <div className="flex-1 max-w-xs mx-auto rounded-md border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1 text-center text-[11px] text-[var(--text-muted)]">
                             app.shikigami.dev/dashboard
                         </div>
                     </div>
@@ -153,19 +153,19 @@ export default function Home() {
                     {/* App interior */}
                     <div className="flex min-h-[280px]">
                         {/* Sidebar */}
-                        <div className="hidden sm:flex w-48 shrink-0 flex-col border-r border-[#2e2924] p-4 gap-1">
+                        <div className="hidden sm:flex w-48 shrink-0 flex-col border-r border-[var(--border)] p-4 gap-1">
                             <div className="mb-4 flex items-center gap-2">
                                 <div className="h-5 w-5 rounded bg-[#c96b3e]/10 flex items-center justify-center">
                                     <Bot className="h-3 w-3 text-[#c96b3e]" />
                                 </div>
-                                <span className="text-[11px] font-semibold text-[#e8ddd5]">Shikigami</span>
+                                <span className="text-[11px] font-semibold text-[var(--text-heading)]">Shikigami</span>
                             </div>
                             {["Deployments", "Logs", "Settings"].map((item, i) => (
                                 <div
                                     key={item}
                                     className={`rounded-lg px-3 py-1.5 text-[11px] ${i === 0
                                         ? "bg-[#c96b3e]/10 text-[#c96b3e] font-medium"
-                                        : "text-[#7a6e66]"
+                                        : "text-[var(--text-muted)]"
                                         }`}
                                 >
                                     {item}
@@ -176,7 +176,7 @@ export default function Home() {
                         {/* Main */}
                         <div className="flex-1 p-5">
                             <div className="flex items-center justify-between mb-4">
-                                <p className="text-xs font-semibold text-[#e8ddd5]">Deployments</p>
+                                <p className="text-xs font-semibold text-[var(--text-heading)]">Deployments</p>
                                 <div className="rounded-lg bg-[#c96b3e] px-3 py-1 text-[10px] font-medium text-white">
                                     Add New Agent
                                 </div>
@@ -189,15 +189,15 @@ export default function Home() {
                                 ].map((agent) => (
                                     <div
                                         key={agent.name}
-                                        className="flex items-center justify-between rounded-xl border border-[#2e2924] bg-[#1a1714] px-4 py-3"
+                                        className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-4 py-3"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="h-6 w-6 rounded-lg bg-[#2e2924] flex items-center justify-center">
+                                            <div className="h-6 w-6 rounded-lg bg-[var(--border)] flex items-center justify-center">
                                                 <Bot className="h-3 w-3 text-[#c96b3e]" />
                                             </div>
                                             <div>
-                                                <p className="text-[11px] font-medium text-[#e8ddd5]">{agent.name}</p>
-                                                <p className="text-[10px] text-[#7a6e66]">{agent.lang} · {agent.time}</p>
+                                                <p className="text-[11px] font-medium text-[var(--text-heading)]">{agent.name}</p>
+                                                <p className="text-[10px] text-[var(--text-muted)]">{agent.lang} · {agent.time}</p>
                                             </div>
                                         </div>
                                         <span
@@ -218,12 +218,12 @@ export default function Home() {
             </section>
 
             {/* Features */}
-            <section className="border-t border-[#2e2924] mx-auto max-w-6xl px-4 sm:px-6 py-20">
+            <section className="border-t border-[var(--border)] mx-auto max-w-6xl px-4 sm:px-6 py-20">
                 <div className="text-center mb-12">
-                    <h2 className="text-2xl font-semibold text-[#e8ddd5]">
+                    <h2 className="text-2xl font-semibold text-[var(--text-heading)]">
                         Everything your agent runtime needs
                     </h2>
-                    <p className="mt-2 text-sm text-[#7a6e66]">
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">
                         Built for the modern AI-native developer workflow.
                     </p>
                 </div>
@@ -232,25 +232,25 @@ export default function Home() {
                     {FEATURES.map(({ Icon, title, description }) => (
                         <div
                             key={title}
-                            className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 hover:border-[#c96b3e]/30 transition-colors"
+                            className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 hover:border-[#c96b3e]/30 transition-colors"
                         >
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1a1714] border border-[#2e2924] text-[#c96b3e] mb-4">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--bg-base)] border border-[var(--border)] text-[#c96b3e] mb-4">
                                 <Icon className="h-4 w-4" />
                             </div>
-                            <h3 className="text-sm font-semibold text-[#e8ddd5]">{title}</h3>
-                            <p className="mt-2 text-xs text-[#7a6e66] leading-relaxed">{description}</p>
+                            <h3 className="text-sm font-semibold text-[var(--text-heading)]">{title}</h3>
+                            <p className="mt-2 text-xs text-[var(--text-muted)] leading-relaxed">{description}</p>
                         </div>
                     ))}
                 </div>
             </section>
 
             {/* CTA */}
-            <section className="border-t border-[#2e2924]">
+            <section className="border-t border-[var(--border)]">
                 <div className="mx-auto max-w-2xl px-4 py-20 sm:px-6 text-center">
-                    <h2 className="text-2xl font-semibold text-[#e8ddd5]">
+                    <h2 className="text-2xl font-semibold text-[var(--text-heading)]">
                         Ship your first agent today
                     </h2>
-                    <p className="mt-3 text-sm text-[#7a6e66]">
+                    <p className="mt-3 text-sm text-[var(--text-muted)]">
                         No DevOps expertise required. Connect your repo and deploy in under 60 seconds.
                     </p>
                     <Link
@@ -265,8 +265,8 @@ export default function Home() {
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-[#2e2924] py-6 text-center">
-                <p className="text-[11px] text-[#7a6e66]">
+            <footer className="border-t border-[var(--border)] py-6 text-center">
+                <p className="text-[11px] text-[var(--text-muted)]">
                     © {new Date().getFullYear()} Shikigami · Deploy AI agents like you deploy websites
                 </p>
             </footer>

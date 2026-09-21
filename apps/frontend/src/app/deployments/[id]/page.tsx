@@ -66,9 +66,9 @@ function statusConfig(status: DeployStatus) {
         case "queued":
             return {
                 label: "Queued",
-                dot: "bg-[#7a6e66]",
-                badge: "bg-[#2e2924] text-[#7a6e66] border-[#3e3730]",
-                icon: <CircleDashed className="h-4 w-4 text-[#7a6e66]" />,
+                dot: "bg-[var(--text-muted)]",
+                badge: "bg-[var(--border)] text-[var(--text-muted)] border-[#3e3730]",
+                icon: <CircleDashed className="h-4 w-4 text-[var(--text-muted)]" />,
             };
     }
 }
@@ -87,8 +87,8 @@ function logLevelColor(level: LogLine["level"]) {
     switch (level) {
         case "error": return "text-red-400";
         case "warn": return "text-amber-400";
-        case "info": return "text-[#c4b8b0]";
-        case "debug": return "text-[#7a6e66]";
+        case "info": return "text-[var(--text-body)]";
+        case "debug": return "text-[var(--text-muted)]";
     }
 }
 
@@ -132,13 +132,13 @@ function StatCard({
     mono?: boolean;
 }) {
     return (
-        <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-4 flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1a1714] border border-[#2e2924] text-[#c96b3e]">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 flex items-start gap-3">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-base)] border border-[var(--border)] text-[#c96b3e]">
                 {icon}
             </div>
             <div className="min-w-0">
-                <p className="text-[11px] font-medium uppercase tracking-wider text-[#7a6e66]">{label}</p>
-                <p className={`mt-0.5 text-sm font-medium text-[#e8ddd5] truncate ${mono ? "font-mono" : ""}`}>
+                <p className="text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
+                <p className={`mt-0.5 text-sm font-medium text-[var(--text-heading)] truncate ${mono ? "font-mono" : ""}`}>
                     {value}
                 </p>
             </div>
@@ -156,7 +156,7 @@ function CopyButton({ text }: { text: string }) {
     return (
         <button
             onClick={copy}
-            className="p-1.5 rounded-lg text-[#7a6e66] hover:text-[#e8ddd5] hover:bg-[#2e2924] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--border)] transition-colors cursor-pointer"
             title="Copy"
         >
             {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
@@ -242,7 +242,7 @@ export default function DeploymentDetailPage() {
 
     if (!deployment && !notFound) {
         return (
-            <div className="min-h-screen bg-[#1a1714] flex flex-col">
+            <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar user={user ?? undefined} />
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
@@ -253,21 +253,21 @@ export default function DeploymentDetailPage() {
 
     if (notFound || !deployment) {
         return (
-            <div className="min-h-screen bg-[#1a1714] flex flex-col">
+            <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar user={user ?? undefined} />
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#211e1a] border border-[#2e2924] text-[#7a6e66]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-muted)]">
                         <AlertTriangle className="h-5 w-5" />
                     </div>
                     <div>
-                        <h2 className="text-base font-semibold text-[#e8ddd5]">Deployment not found</h2>
-                        <p className="mt-1 text-sm text-[#7a6e66]">
+                        <h2 className="text-base font-semibold text-[var(--text-heading)]">Deployment not found</h2>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">
                             No deployment with ID <span className="font-mono text-[#c96b3e]">{id}</span> exists locally.
                         </p>
                     </div>
                     <Link
                         href="/dashboard"
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#211e1a] border border-[#2e2924] px-4 py-2 text-sm font-medium text-[#e8ddd5] hover:border-[#c96b3e]/40 transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-heading)] hover:border-[#c96b3e]/40 transition-colors"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" />
                         Back to Dashboard
@@ -280,15 +280,15 @@ export default function DeploymentDetailPage() {
     const sc = statusConfig(deployment.status);
 
     return (
-        <div className="min-h-screen bg-[#1a1714] text-[#e8ddd5] flex flex-col">
+        <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-heading)] flex flex-col">
             <Navbar user={user ?? undefined} />
 
             <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8 space-y-8">
 
                 {/* ── Breadcrumb ─────────────────────────────────────────────── */}
                 <div>
-                    <div className="flex items-center gap-2 text-xs font-medium text-[#7a6e66] mb-4">
-                        <Link href="/dashboard" className="hover:text-[#e8ddd5] transition-colors">
+                    <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)] mb-4">
+                        <Link href="/dashboard" className="hover:text-[var(--text-heading)] transition-colors">
                             Deployments
                         </Link>
                         <span>/</span>
@@ -298,12 +298,12 @@ export default function DeploymentDetailPage() {
                     {/* ── Header ───────────────────────────────────────────────── */}
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="flex items-center gap-3.5">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#211e1a] border border-[#2e2924] text-[#c96b3e]">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-[#c96b3e]">
                                 <Box className="h-5 w-5" />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2.5 flex-wrap">
-                                    <h1 className="text-xl font-semibold tracking-tight text-[#e8ddd5]">
+                                    <h1 className="text-xl font-semibold tracking-tight text-[var(--text-heading)]">
                                         {deployment.name}
                                     </h1>
                                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium border ${sc.badge}`}>
@@ -311,7 +311,7 @@ export default function DeploymentDetailPage() {
                                         {sc.label}
                                     </span>
                                 </div>
-                                <p className="mt-0.5 text-xs text-[#7a6e66] font-mono">{deployment.id}</p>
+                                <p className="mt-0.5 text-xs text-[var(--text-muted)] font-mono">{deployment.id}</p>
                             </div>
                         </div>
 
@@ -320,10 +320,10 @@ export default function DeploymentDetailPage() {
                                 href={deployment.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#211e1a] px-3.5 py-2 text-xs font-medium text-[#e8ddd5] hover:border-[#c96b3e]/40 transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-2 text-xs font-medium text-[var(--text-heading)] hover:border-[#c96b3e]/40 transition-colors"
                             >
                                 Visit
-                                <ExternalLink className="h-3 w-3 text-[#7a6e66]" />
+                                <ExternalLink className="h-3 w-3 text-[var(--text-muted)]" />
                             </a>
                             <button
                                 className="inline-flex items-center gap-1.5 rounded-xl border border-[#c96b3e]/30 bg-[#c96b3e]/10 px-3.5 py-2 text-xs font-medium text-[#c96b3e] hover:bg-[#c96b3e]/15 transition-colors cursor-pointer"
@@ -365,11 +365,11 @@ export default function DeploymentDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                     {/* ── Build Logs ─────────────────────────────────────────── */}
-                    <div className="lg:col-span-2 rounded-2xl border border-[#2e2924] bg-[#211e1a] overflow-hidden flex flex-col">
-                        <div className="border-b border-[#2e2924] px-5 py-3.5 flex items-center justify-between">
+                    <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden flex flex-col">
+                        <div className="border-b border-[var(--border)] px-5 py-3.5 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
                                 <Terminal className="h-4 w-4 text-[#c96b3e]" />
-                                <h2 className="text-sm font-semibold text-[#e8ddd5]">Build Logs</h2>
+                                <h2 className="text-sm font-semibold text-[var(--text-heading)]">Build Logs</h2>
                                 {logsRunning && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-400">
                                         <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -386,7 +386,7 @@ export default function DeploymentDetailPage() {
 
                         <div className="flex-1 overflow-y-auto h-[400px] p-4 font-mono text-xs space-y-0.5 bg-[#181511]">
                             {logs.length === 0 ? (
-                                <div className="flex items-center justify-center h-full text-[#7a6e66]">
+                                <div className="flex items-center justify-center h-full text-[var(--text-muted)]">
                                     {deployment.status === "ready" ? (
                                         <span>Build completed — logs archived.</span>
                                     ) : (
@@ -399,13 +399,13 @@ export default function DeploymentDetailPage() {
                             ) : (
                                 logs.map((line, i) => (
                                     <div key={i} className="flex gap-3 leading-relaxed group">
-                                        <span className="shrink-0 text-[#3e3730] group-hover:text-[#7a6e66] transition-colors select-none">
+                                        <span className="shrink-0 text-[#3e3730] group-hover:text-[var(--text-muted)] transition-colors select-none">
                                             {new Date(line.ts).toLocaleTimeString("en-US", { hour12: false })}
                                         </span>
                                         <span className={`shrink-0 w-10 uppercase text-[10px] font-bold tracking-wider ${logLevelColor(line.level)}`}>
                                             {line.level}
                                         </span>
-                                        <span className="text-[#c4b8b0] break-all">{line.msg}</span>
+                                        <span className="text-[var(--text-body)] break-all">{line.msg}</span>
                                     </div>
                                 ))
                             )}
@@ -417,14 +417,14 @@ export default function DeploymentDetailPage() {
                     <div className="space-y-4">
 
                         {/* Deployment URL */}
-                        <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-4">
+                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <Globe className="h-3.5 w-3.5 text-[#c96b3e]" />
-                                <h3 className="text-xs font-semibold text-[#e8ddd5] uppercase tracking-wider">
+                                <h3 className="text-xs font-semibold text-[var(--text-heading)] uppercase tracking-wider">
                                     Endpoint
                                 </h3>
                             </div>
-                            <div className="flex items-center justify-between gap-2 rounded-lg border border-[#2e2924] bg-[#1a1714] px-3 py-2">
+                            <div className="flex items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2">
                                 <span className="font-mono text-[11px] text-[#c96b3e] truncate">
                                     {deployment.url}
                                 </span>
@@ -434,7 +434,7 @@ export default function DeploymentDetailPage() {
                                 href={deployment.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] py-2 text-xs font-medium text-[#7a6e66] hover:text-[#e8ddd5] hover:border-[#c96b3e]/30 transition-colors"
+                                className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[#c96b3e]/30 transition-colors"
                             >
                                 Open endpoint
                                 <ExternalLink className="h-3 w-3" />
@@ -442,10 +442,10 @@ export default function DeploymentDetailPage() {
                         </div>
 
                         {/* Repo info */}
-                        <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-4 space-y-3">
+                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 space-y-3">
                             <div className="flex items-center gap-2 mb-1">
                                 <Zap className="h-3.5 w-3.5 text-[#c96b3e]" />
-                                <h3 className="text-xs font-semibold text-[#e8ddd5] uppercase tracking-wider">
+                                <h3 className="text-xs font-semibold text-[var(--text-heading)] uppercase tracking-wider">
                                     Source
                                 </h3>
                             </div>
@@ -456,16 +456,16 @@ export default function DeploymentDetailPage() {
                                     { label: "Branch", value: deployment.branch },
                                     { label: "Commit", value: deployment.commitSha || "—", mono: true },
                                 ].map(({ label, value, mono }) => (
-                                    <div key={label} className="flex items-start justify-between gap-2 py-1.5 border-b border-[#2e2924]/60 last:border-0">
-                                        <span className="text-[11px] text-[#7a6e66]">{label}</span>
-                                        <span className={`text-[11px] text-[#e8ddd5] text-right truncate max-w-[140px] ${mono ? "font-mono" : ""}`}>
+                                    <div key={label} className="flex items-start justify-between gap-2 py-1.5 border-b border-[var(--border)]/60 last:border-0">
+                                        <span className="text-[11px] text-[var(--text-muted)]">{label}</span>
+                                        <span className={`text-[11px] text-[var(--text-heading)] text-right truncate max-w-[140px] ${mono ? "font-mono" : ""}`}>
                                             {value}
                                         </span>
                                     </div>
                                 ))}
                                 <div className="flex items-start justify-between gap-2 py-1.5">
-                                    <span className="text-[11px] text-[#7a6e66]">Created</span>
-                                    <span className="text-[11px] text-[#e8ddd5]">
+                                    <span className="text-[11px] text-[var(--text-muted)]">Created</span>
+                                    <span className="text-[11px] text-[var(--text-heading)]">
                                         {new Date(deployment.createdAt).toLocaleDateString("en-US", {
                                             month: "short",
                                             day: "numeric",
@@ -478,10 +478,10 @@ export default function DeploymentDetailPage() {
                         </div>
 
                         {/* Status timeline */}
-                        <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-4">
+                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
                             <div className="flex items-center gap-2 mb-4">
                                 <Cpu className="h-3.5 w-3.5 text-[#c96b3e]" />
-                                <h3 className="text-xs font-semibold text-[#e8ddd5] uppercase tracking-wider">
+                                <h3 className="text-xs font-semibold text-[var(--text-heading)] uppercase tracking-wider">
                                     Pipeline
                                 </h3>
                             </div>
@@ -499,12 +499,12 @@ export default function DeploymentDetailPage() {
                                         <span
                                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${done
                                                 ? "bg-[#c96b3e]/20 border-[#c96b3e]/40 text-[#c96b3e]"
-                                                : "bg-[#1a1714] border-[#2e2924] text-[#7a6e66]"
+                                                : "bg-[var(--bg-base)] border-[var(--border)] text-[var(--text-muted)]"
                                                 }`}
                                         >
                                             {done ? <Check className="h-2.5 w-2.5" /> : i + 1}
                                         </span>
-                                        <span className={`text-xs ${done ? "text-[#e8ddd5]" : "text-[#7a6e66]"}`}>
+                                        <span className={`text-xs ${done ? "text-[var(--text-heading)]" : "text-[var(--text-muted)]"}`}>
                                             {step}
                                         </span>
                                     </li>
@@ -516,9 +516,9 @@ export default function DeploymentDetailPage() {
 
                 {/* ── Commit message banner (if present) ────────────────────── */}
                 {deployment.commitMessage && (
-                    <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] px-5 py-3.5 flex items-center gap-3">
-                        <GitCommit className="h-4 w-4 shrink-0 text-[#7a6e66]" />
-                        <p className="text-sm text-[#c4b8b0] truncate">{deployment.commitMessage}</p>
+                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] px-5 py-3.5 flex items-center gap-3">
+                        <GitCommit className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />
+                        <p className="text-sm text-[var(--text-body)] truncate">{deployment.commitMessage}</p>
                     </div>
                 )}
 

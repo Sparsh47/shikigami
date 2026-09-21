@@ -66,7 +66,7 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#1a1714] flex flex-col">
+            <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
                     <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
@@ -77,15 +77,15 @@ export default function Dashboard() {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-[#1a1714] flex flex-col">
+            <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                    <div className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-8 max-w-md w-full">
+                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 max-w-md w-full">
                         <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-[#c96b3e]/10 text-[#c96b3e] mb-4">
                             <Bot className="h-5 w-5" />
                         </div>
-                        <h2 className="text-lg font-semibold text-[#e8ddd5]">Authentication required</h2>
-                        <p className="mt-2 text-sm text-[#7a6e66]">
+                        <h2 className="text-lg font-semibold text-[var(--text-heading)]">Authentication required</h2>
+                        <p className="mt-2 text-sm text-[var(--text-muted)]">
                             Sign in with your GitHub account to view your deployments.
                         </p>
                         <Link
@@ -101,7 +101,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-[#1a1714] text-[#e8ddd5] flex flex-col">
+        <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-heading)] flex flex-col">
             <Navbar user={user} />
 
             <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
@@ -109,10 +109,10 @@ export default function Dashboard() {
                 {/* Header Row */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
                     <div>
-                        <p className="text-xs font-medium uppercase tracking-widest text-[#7a6e66] mb-1.5">
+                        <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-muted)] mb-1.5">
                             {user.login}
                         </p>
-                        <h1 className="text-2xl font-semibold text-[#e8ddd5] tracking-tight">
+                        <h1 className="text-2xl font-semibold text-[var(--text-heading)] tracking-tight">
                             Deployments
                         </h1>
                     </div>
@@ -129,24 +129,24 @@ export default function Dashboard() {
                 {/* Filter & Search */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
                     <div className="relative max-w-sm w-full">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#7a6e66]" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search deployments..."
-                            className="w-full rounded-xl border border-[#2e2924] bg-[#211e1a] py-2 pl-9 pr-4 text-sm text-[#e8ddd5] placeholder:text-[#7a6e66] focus:border-[#c96b3e]/50 focus:outline-none focus:ring-0 transition-colors"
+                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none focus:ring-0 transition-colors"
                         />
                     </div>
 
-                    <div className="flex items-center gap-1 rounded-xl border border-[#2e2924] bg-[#211e1a] p-1 shrink-0">
+                    <div className="flex items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] p-1 shrink-0">
                         {(["all", "ready", "building", "failed"] as const).map((s) => (
                             <button
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
                                 className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${statusFilter === s
                                     ? "bg-[#c96b3e] text-white"
-                                    : "text-[#7a6e66] hover:text-[#e8ddd5]"
+                                    : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
                                     }`}
                             >
                                 {s}
@@ -174,21 +174,21 @@ export default function Dashboard() {
                 {deploymentsLoading ? (
                     <div className="space-y-4">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 animate-pulse">
+                            <div key={i} className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 animate-pulse">
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="space-y-2.5 flex-1">
                                         <div className="flex items-center gap-2.5">
-                                            <div className="h-4 w-36 rounded-md bg-[#2e2924]" />
-                                            <div className="h-4 w-16 rounded-full bg-[#2e2924]" />
-                                            <div className="h-4 w-20 rounded-md bg-[#2e2924]" />
+                                            <div className="h-4 w-36 rounded-md bg-[var(--border)]" />
+                                            <div className="h-4 w-16 rounded-full bg-[var(--border)]" />
+                                            <div className="h-4 w-20 rounded-md bg-[var(--border)]" />
                                         </div>
                                         <div className="flex gap-3">
-                                            <div className="h-3 w-20 rounded bg-[#2e2924]" />
-                                            <div className="h-3 w-32 rounded bg-[#2e2924]" />
-                                            <div className="h-3 w-16 rounded bg-[#2e2924]" />
+                                            <div className="h-3 w-20 rounded bg-[var(--border)]" />
+                                            <div className="h-3 w-32 rounded bg-[var(--border)]" />
+                                            <div className="h-3 w-16 rounded bg-[var(--border)]" />
                                         </div>
                                     </div>
-                                    <div className="h-8 w-16 rounded-xl bg-[#2e2924]" />
+                                    <div className="h-8 w-16 rounded-xl bg-[var(--border)]" />
                                 </div>
                             </div>
                         ))}
@@ -204,14 +204,14 @@ export default function Dashboard() {
 
                     if (filtered.length === 0) {
                         return (
-                            <div className="rounded-2xl border border-dashed border-[#2e2924] py-20 text-center">
-                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#211e1a] text-[#7a6e66] mb-4">
+                            <div className="rounded-2xl border border-dashed border-[var(--border)] py-20 text-center">
+                                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-surface)] text-[var(--text-muted)] mb-4">
                                     <Layers className="h-5 w-5" />
                                 </div>
-                                <h3 className="text-sm font-semibold text-[#e8ddd5]">
+                                <h3 className="text-sm font-semibold text-[var(--text-heading)]">
                                     {searchQuery ? "No matching deployments" : "No deployments yet"}
                                 </h3>
-                                <p className="mt-1.5 text-xs text-[#7a6e66] max-w-xs mx-auto leading-relaxed">
+                                <p className="mt-1.5 text-xs text-[var(--text-muted)] max-w-xs mx-auto leading-relaxed">
                                     {searchQuery
                                         ? "Try a different search keyword or status filter."
                                         : "Connect a GitHub repository to deploy your first AI agent runtime."}
@@ -252,8 +252,8 @@ export default function Dashboard() {
                                 );
                             case "queued":
                                 return (
-                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#2e2924] px-2.5 py-0.5 text-xs font-medium text-[#7a6e66] border border-[#3e3730]">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-[#7a6e66]" />
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--border)] px-2.5 py-0.5 text-xs font-medium text-[var(--text-muted)] border border-[#3e3730]">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)]" />
                                         Queued
                                     </span>
                                 );
@@ -266,30 +266,30 @@ export default function Dashboard() {
                                 <Link
                                     key={dep.id}
                                     href={`/deployments/${dep.id}`}
-                                    className="block rounded-2xl border border-[#2e2924] bg-[#211e1a] p-6 transition-all hover:border-[#c96b3e]/40 cursor-pointer"
+                                    className="block rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 transition-all hover:border-[#c96b3e]/40 cursor-pointer"
                                 >
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2.5 flex-wrap">
-                                                <h3 className="text-base font-semibold text-[#e8ddd5]">
+                                                <h3 className="text-base font-semibold text-[var(--text-heading)]">
                                                     {dep.name}
                                                 </h3>
                                                 {statusBadge(dep.status)}
-                                                <span className="rounded-md bg-[#1a1714] px-2 py-0.5 text-[11px] font-medium text-[#7a6e66] border border-[#2e2924]">
+                                                <span className="rounded-md bg-[var(--bg-base)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-muted)] border border-[var(--border)]">
                                                     {dep.framework}
                                                 </span>
                                             </div>
 
-                                            <div className="flex items-center gap-3 text-xs text-[#7a6e66] flex-wrap">
+                                            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)] flex-wrap">
                                                 <span className="inline-flex items-center gap-1">
-                                                    <GitBranch className="h-3 w-3 text-[#7a6e66]" />
+                                                    <GitBranch className="h-3 w-3 text-[var(--text-muted)]" />
                                                     {dep.branch}
                                                 </span>
                                                 <span>•</span>
                                                 <span className="font-mono text-[11px]">{dep.repo}</span>
                                                 <span>•</span>
                                                 <span className="inline-flex items-center gap-1 font-mono text-[11px]">
-                                                    <GitCommit className="h-3 w-3 text-[#7a6e66]" />
+                                                    <GitCommit className="h-3 w-3 text-[var(--text-muted)]" />
                                                     {dep.commitSha}
                                                 </span>
                                             </div>
@@ -301,10 +301,10 @@ export default function Dashboard() {
                                                     e.preventDefault();
                                                     window.open(dep.url, "_blank", "noreferrer");
                                                 }}
-                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#2e2924] bg-[#1a1714] px-3.5 py-2 text-xs font-medium text-[#e8ddd5] hover:border-[#c96b3e]/40 hover:text-white transition-colors cursor-pointer"
+                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-medium text-[var(--text-heading)] hover:border-[#c96b3e]/40 hover:text-white transition-colors cursor-pointer"
                                             >
                                                 Visit
-                                                <ExternalLink className="h-3 w-3 text-[#7a6e66]" />
+                                                <ExternalLink className="h-3 w-3 text-[var(--text-muted)]" />
                                             </button>
                                         </div>
                                     </div>

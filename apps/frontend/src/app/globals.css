@@ -20,12 +20,43 @@
     --accent-subtle: rgba(201, 107, 62, 0.1);
 }
 
-/* Global scrollbars styled to match the Claude warm dark palette */
+/* Light theme */
+:root.light,
+.light {
+    --bg-base: #faf8f5;
+    --bg-surface: #f2ede8;
+    --bg-elevated: #e8e1d9;
+    --border: #d8cfc6;
+    --border-muted: #e4ddd6;
+    --text-heading: #1a1714;
+    --text-body: #3d342c;
+    --text-muted: #8a7b70;
+    --accent: #c96b3e;
+    --accent-hover: #b85e34;
+    --accent-subtle: rgba(201, 107, 62, 0.12);
+}
+
+/* Apply CSS variables to elements using Tailwind's arbitrary value syntax */
+body {
+    background-color: var(--bg-base);
+    color: var(--text-body);
+}
+
+/* Smooth theme transitions */
+*, *::before, *::after {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+/* But not transforms/opacity (would slow animations) */
+[class*="animate-"], [class*="transition-"] {
+    transition: unset;
+}
+
+/* Global scrollbars — theme-aware */
 html,
 body,
 * {
     scrollbar-width: thin;
-    scrollbar-color: #3e3730 transparent;
+    scrollbar-color: var(--border) transparent;
 }
 
 ::-webkit-scrollbar {

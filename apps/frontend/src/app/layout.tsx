@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -80,9 +81,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-screen bg-[#1a1714] text-[#c4b8b0] antialiased selection:bg-[#c96b3e]/30 selection:text-[#e8ddd5]`}>
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] antialiased selection:bg-[#c96b3e]/30 selection:text-[var(--text-heading)]`}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
