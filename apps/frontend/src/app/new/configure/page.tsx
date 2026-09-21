@@ -19,14 +19,10 @@ import {
     EyeOff,
     Plus,
     Trash2,
-    Check,
     Loader2,
     Sliders,
-    Layers,
     ChevronDown,
     ChevronUp,
-    Sparkles,
-    Shield,
     ExternalLink,
 } from "lucide-react";
 
@@ -197,7 +193,6 @@ function ConfigureAgentContent() {
         setDeployError(null);
         setDeployStep("Connecting to build cluster…");
 
-        // Construct clone URL from htmlUrlParam or repoParam
         let cloneUrl = htmlUrlParam;
         if (!cloneUrl) {
             cloneUrl = `https://github.com/${repoParam}.git`;
@@ -207,7 +202,6 @@ function ConfigureAgentContent() {
 
         const buildCmd = overrideBuild ? customBuildCmd : selectedFramework.defaultBuild;
         const rawRunCmd = overrideRun ? customRunCmd : selectedFramework.defaultRun;
-        // "container entrypoint" is a placeholder — don't send it, let the image's CMD take over
         const runCmd = rawRunCmd === "container entrypoint" ? "" : rawRunCmd;
         const cpuValue = parseFloat(cpu.replace(/[^0-9.]/g, "")) || 1.0;
 
@@ -238,7 +232,7 @@ function ConfigureAgentContent() {
         try {
             setDeployStep("Triggering Kaniko container build…");
 
-            const res = await fetch("http://localhost:8080/api/deployments", {
+            const res = await fetch("http://localhost:8080/api/deployments/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -251,7 +245,6 @@ function ConfigureAgentContent() {
                 throw new Error(errorData.message || errorData.error || "Failed to create deployment");
             }
 
-            const data = await res.json();
             setDeployStep("Build job queued successfully in cluster!");
 
             setTimeout(() => {
@@ -285,7 +278,7 @@ function ConfigureAgentContent() {
                             href="/new"
                             className="hover:text-[var(--text-heading)] transition-colors"
                         >
-                            New Agent
+                            {displayRepoName.split("/")[1]}
                         </Link>
                         <span>/</span>
                         <span className="text-[#c96b3e]">Configure</span>
@@ -657,8 +650,8 @@ function ConfigureAgentContent() {
                                             type="button"
                                             onClick={() => setMemory(m)}
                                             className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${memory === m
-                                                    ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
-                                                    : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
+                                                ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
+                                                : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
                                                 }`}
                                         >
                                             {m}
@@ -678,8 +671,8 @@ function ConfigureAgentContent() {
                                             type="button"
                                             onClick={() => setCpu(c)}
                                             className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${cpu === c
-                                                    ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
-                                                    : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
+                                                ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
+                                                : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
                                                 }`}
                                         >
                                             {c.replace(" vCPU", "")}
@@ -702,8 +695,8 @@ function ConfigureAgentContent() {
                                             type="button"
                                             onClick={() => setScalingMode(mode.id as typeof scalingMode)}
                                             className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${scalingMode === mode.id
-                                                    ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
-                                                    : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
+                                                ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
+                                                : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
                                                 }`}
                                         >
                                             {mode.label}

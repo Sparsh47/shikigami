@@ -88,7 +88,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         }
     });
 
-    fastify.post("/", async (request, reply) => {
+    fastify.post("/create", async (request, reply) => {
         try {
             const parsed = createDeploymentSchema.safeParse(request.body);
 
@@ -119,7 +119,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                 commitMessage,
             } = parsed.data;
 
-            // Check if agent already exists for this user, or create a new one
             let agent = await prisma.agent.findFirst({
                 where: {
                     userId,
@@ -154,7 +153,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                     },
                 });
             } else {
-                // Update agent configurations if already existing
                 agent = await prisma.agent.update({
                     where: { id: agent.id },
                     data: {
@@ -173,7 +171,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                     },
                 });
 
-                // Update or recreate envVars if provided
                 if (envVars.length > 0) {
                     const currentAgentId = agent.id;
                     await prisma.envVar.deleteMany({
@@ -193,7 +190,6 @@ export async function userRoutes(fastify: FastifyInstance) {
             const cleanName = agentName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
             const jobName = `kaniko-${cleanName}-${Date.now()}`;
 
-            // Create a new Deployment record linked to this agent
             const deployment = await prisma.deployment.create({
                 data: {
                     agentId: agent.id,
@@ -209,14 +205,15 @@ export async function userRoutes(fastify: FastifyInstance) {
             const gitContext = `git://github.com/${repoFullName}.git#${gitRef}`;
 
 
-            await createKanikoJob({ jobName: deployment.jobName!, gitContext, destination: `jestico/${deployment.jobName}` });
+            await createKanikoJob({ jobName: deployment.jobName!, gitContext, destination: `jestico/${deployment.jobName}`, cache: false });
+
             await watchJob(deployment.jobName!, deployment.id);
 
             return reply.status(201).send({
                 success: true,
                 agentId: agent.id,
                 deploymentId: deployment.id,
-                destination: `jestico/${cleanName}:${deployment.id}`
+                destination: `jestico/${cleanName}:${deployment.id}`,
             });
         } catch (error) {
             fastify.log.error(error);

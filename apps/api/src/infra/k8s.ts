@@ -27,9 +27,11 @@ interface KanikoJobOverrides {
     jobName?: string;
     gitContext?: string;
     destination?: string;
+    cache?: boolean;
+    pathOfDockerfile?: string;
 }
 
-export async function createKanikoJob(overrides: KanikoJobOverrides = {}) {
+export async function createKanikoJob(overrides: KanikoJobOverrides = { cache: false }) {
     const fileContents = fs.readFileSync(KANIKO_JOB_YAML_PATH, "utf8");
     const jobManifest = yaml.load(fileContents) as k8s.V1Job;
 
@@ -49,6 +51,12 @@ export async function createKanikoJob(overrides: KanikoJobOverrides = {}) {
                 }
                 if (overrides.destination && arg.startsWith("--destination=")) {
                     return `--destination=${overrides.destination}`;
+                }
+                if (overrides.cache === false && arg.startsWith("--cache=")) {
+                    return `--cache=${overrides.cache}`;
+                }
+                if (overrides.pathOfDockerfile && arg.startsWith("--dockerfile=")) {
+                    return `--dockerfile=${overrides.pathOfDockerfile}`;
                 }
                 return arg;
             });
@@ -83,41 +91,21 @@ export async function deleteJob(jobName: string): Promise<void> {
 }
 
 export interface DeployAppOptions {
-    /** Stable name for this app, e.g. "my-app" (lowercase, no spaces). Used as the k8s resource name. */
     appName: string;
-    /** Full image reference pushed by Kaniko, e.g. "jestico/kaniko-my-app-1234" */
     image: string;
-    /** Port the container listens on (from Agent.port) */
     port: number;
-    /** CPU request/limit, e.g. "500m" or "1" */
     cpu: string;
-    /** Memory request/limit, e.g. "512Mi" or "1Gi" */
     memory: string;
-    /** Shell command to start the app, e.g. "npm start" or "node server.js" (from Agent.runCommand) */
     runCommand?: string;
-    /** k8s Secret name that holds DockerHub credentials for image pull. Defaults to "dockerhub-secret" */
     imagePullSecret?: string;
-    /** Environment variables to inject into the container */
     env?: Array<{ name: string; value: string }>;
 }
 
-/**
- * Creates (or replaces) a Kubernetes Deployment + Service for a user's app.
- * - Deployment name: appName
- * - Service name:    appName-svc
- * - Selector label:  app=appName
- *
- * On re-deploy, the existing Deployment is patched with the new image
- * so the rollout is seamless.
- */
 export async function deployApp(opts: DeployAppOptions): Promise<string> {
     const { appName, image, port, cpu, env = [], runCommand, imagePullSecret = "dockerhub-secret" } = opts;
 
-    // Normalize memory: "1GB" → "1Gi", "512MB" → "512Mi"
     const memory = opts.memory.replace(/GB$/i, "Gi").replace(/MB$/i, "Mi");
 
-    // Split runCommand string into args array for the container spec.
-    // e.g. "npm start" → ["npm", "start"]
     const command = runCommand?.trim() ? runCommand.trim().split(/\s+/) : undefined;
 
     const labels = { app: appName };
@@ -126,7 +114,6 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         limits: { cpu, memory },
     };
 
-    // ── 1. Deployment ─────────────────────────────────────────────────────────
     const deploymentManifest: k8s.V1Deployment = {
         apiVersion: "apps/v1",
         kind: "Deployment",
@@ -137,7 +124,6 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
             template: {
                 metadata: { labels },
                 spec: {
-                    // Allows pulling the private image pushed by Kaniko
                     imagePullSecrets: [{ name: imagePullSecret }],
                     containers: [
                         {
@@ -155,7 +141,6 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
     };
 
     try {
-        // Try to patch an existing Deployment (idempotent re-deploy)
         await appsV1Api.patchNamespacedDeployment({
             name: appName,
             namespace: NAMESPACE,
@@ -173,7 +158,6 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         }
     }
 
-    // ── 2. Service ────────────────────────────────────────────────────────────
     const serviceName = `${appName}-svc`;
     const serviceManifest: k8s.V1Service = {
         apiVersion: "v1",
@@ -182,7 +166,7 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         spec: {
             selector: labels,
             ports: [{ port: 80, targetPort: port as any }],
-            type: "ClusterIP", // nginx-ingress handles external routing
+            type: "ClusterIP",
         },
     };
 
@@ -203,10 +187,6 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         }
     }
 
-    // ── 3. Ingress ────────────────────────────────────────────────────────────
-    // Uses *.vcap.me — a public wildcard DNS that resolves to 127.0.0.1.
-    // Access via: http://<appName>.vcap.me:<INGRESS_NODE_PORT>
-    // No /etc/hosts changes required on macOS.
     const ingressName = `${appName}-ingress`;
     const host = `${appName}.vcap.me`;
     const ingressManifest: k8s.V1Ingress = {
@@ -260,19 +240,5 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         }
     }
 
-    // Return the URL where the app is reachable locally
     return `http://${host}:${INGRESS_NODE_PORT}`;
-}
-
-const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === __filename;
-if (isMainModule) {
-    createKanikoJob({
-        jobName: `kaniko-build-test-${Date.now()}`,
-    })
-        .then((job) => {
-            console.log("Job created:", job.metadata?.name);
-        })
-        .catch((err) => {
-            console.error("Failed to create Job:", err);
-        });
 }

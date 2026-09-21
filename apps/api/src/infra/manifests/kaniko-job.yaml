@@ -21,7 +21,7 @@ spec:
             - "--destination=jestico/shikigami-test-app:v1.0"
 
             # 4. Optional optimization: enables layer caching
-            - "--cache=true"
+            - "--cache=false"
           volumeMounts:
             # Mount the DockerHub secret so Kaniko can authenticate
             - name: docker-config

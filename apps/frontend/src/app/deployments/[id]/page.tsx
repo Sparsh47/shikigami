@@ -186,33 +186,62 @@ export default function DeploymentDetailPage() {
             .catch(() => { });
     }, []);
 
-    // ── Load deployment from localStorage ─────────────────────────────────────
+    // ── Load deployment and poll if queued/building ──────────────────────────
     useEffect(() => {
+        let isMounted = true;
+
         async function fetchDeployment() {
             try {
                 const res = await fetch(`/api/deployments/${id}`);
                 const deploymentRes = await res.json();
-                const deployment = deploymentRes.deployment;
-                console.log("deployment: ", deployment);
+                const d = deploymentRes.deployment;
 
-                if (deployment) {
-                    setDeployment(deployment);
-                } else {
+                if (d && isMounted) {
+                    setDeployment((prev) => {
+                        if (!prev) return d;
+                        if (
+                            prev.id === d.id &&
+                            prev.status === d.status &&
+                            prev.updatedAt === d.updatedAt &&
+                            prev.url === d.url
+                        ) {
+                            return prev;
+                        }
+                        return d;
+                    });
+                } else if (isMounted) {
                     setNotFound(true);
                 }
             } catch {
-                setNotFound(true);
+                if (isMounted) setNotFound(true);
             }
         }
 
         fetchDeployment();
+
+        const interval = setInterval(() => {
+            fetchDeployment();
+        }, 3000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [id]);
 
-    // ── Auto-stream build logs ─────────────────────────────────────────────────
+    // ── Auto-stream build logs (only once per deployment) ─────────────────────
+    const logsFinishedRef = useRef(false);
+    const streamingStartedRef = useRef(false);
+
     useEffect(() => {
         if (!deployment) return;
-        if (deployment.status !== "building" && deployment.status !== "queued") return;
+        if (deployment.status !== "building" && deployment.status !== "queued") {
+            setLogsRunning(false);
+            return;
+        }
+        if (streamingStartedRef.current || logsFinishedRef.current) return;
 
+        streamingStartedRef.current = true;
         setLogsRunning(true);
         logIndexRef.current = 0;
 
@@ -220,6 +249,7 @@ export default function DeploymentDetailPage() {
             const idx = logIndexRef.current;
             if (idx >= BUILD_LOG_SEQUENCE.length) {
                 setLogsRunning(false);
+                logsFinishedRef.current = true;
                 clearInterval(logIntervalRef.current!);
                 return;
             }
@@ -231,8 +261,10 @@ export default function DeploymentDetailPage() {
             logIndexRef.current += 1;
         }, 420);
 
-        return () => clearInterval(logIntervalRef.current!);
-    }, [deployment]);
+        return () => {
+            if (logIntervalRef.current) clearInterval(logIntervalRef.current);
+        };
+    }, [deployment?.id, deployment?.status]);
 
     // ── Auto-scroll logs ───────────────────────────────────────────────────────
     useEffect(() => {
@@ -391,6 +423,8 @@ export default function DeploymentDetailPage() {
                                 <div className="flex items-center justify-center h-full text-slate-500">
                                     {deployment.status === "ready" ? (
                                         <span>Build completed — logs archived.</span>
+                                    ) : deployment.status === "failed" ? (
+                                        <span className="text-red-400">Build failed.</span>
                                     ) : (
                                         <span className="flex items-center gap-2">
                                             <Loader2 className="h-3.5 w-3.5 animate-spin text-[#c96b3e]" />
@@ -491,24 +525,58 @@ export default function DeploymentDetailPage() {
                             </div>
 
                             <ol className="relative space-y-3 ml-1">
-                                {(
-                                    [
-                                        { step: "Queued", done: true },
-                                        { step: "Building", done: deployment.status !== "queued" },
-                                        { step: "Pushing", done: deployment.status === "ready" || deployment.status === "failed" },
-                                        { step: "Live", done: deployment.status === "ready" },
-                                    ] as const
-                                ).map(({ step, done }, i) => (
-                                    <li key={i} className="flex items-center gap-3">
+                                {[
+                                    {
+                                        step: "Queued",
+                                        state: deployment.status === "queued" ? "current" : "done",
+                                    },
+                                    {
+                                        step: "Building",
+                                        state:
+                                            deployment.status === "queued"
+                                                ? "upcoming"
+                                                : deployment.status === "building"
+                                                ? "current"
+                                                : "done",
+                                    },
+                                    deployment.status === "failed"
+                                        ? {
+                                            step: "Failed",
+                                            state: "failed",
+                                        }
+                                        : {
+                                            step: "Ready",
+                                            state: deployment.status === "ready" ? "done" : "upcoming",
+                                        },
+                                ].map(({ step, state }, i) => (
+                                    <li key={step} className="flex items-center gap-3">
                                         <span
-                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${done
-                                                ? "bg-[#c96b3e]/20 border-[#c96b3e]/40 text-[#c96b3e]"
-                                                : "bg-[var(--bg-base)] border-[var(--border)] text-[var(--text-muted)]"
-                                                }`}
+                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${
+                                                state === "done"
+                                                    ? "bg-[#c96b3e]/20 border-[#c96b3e]/40 text-[#c96b3e]"
+                                                    : state === "current"
+                                                    ? "bg-amber-500/20 border-amber-500/40 text-amber-400"
+                                                    : state === "failed"
+                                                    ? "bg-red-500/20 border-red-500/40 text-red-400"
+                                                    : "bg-[var(--bg-base)] border-[var(--border)] text-[var(--text-muted)]"
+                                            }`}
                                         >
-                                            {done ? <Check className="h-2.5 w-2.5" /> : i + 1}
+                                            {state === "done" && <Check className="h-2.5 w-2.5" />}
+                                            {state === "current" && <Loader2 className="h-2.5 w-2.5 animate-spin" />}
+                                            {state === "failed" && <XCircle className="h-2.5 w-2.5" />}
+                                            {state === "upcoming" && (i + 1)}
                                         </span>
-                                        <span className={`text-xs ${done ? "text-[var(--text-heading)]" : "text-[var(--text-muted)]"}`}>
+                                        <span
+                                            className={`text-xs ${
+                                                state === "failed"
+                                                    ? "text-red-400 font-medium"
+                                                    : state === "current"
+                                                    ? "text-amber-400 font-medium"
+                                                    : state === "done"
+                                                    ? "text-[var(--text-heading)]"
+                                                    : "text-[var(--text-muted)]"
+                                            }`}
+                                        >
                                             {step}
                                         </span>
                                     </li>
