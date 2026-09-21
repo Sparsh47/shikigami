@@ -32,16 +32,6 @@ export async function GET(request: NextRequest) {
 
     const accessToken = tokenData.access_token;
 
-    const userResponse = await fetch("https://api.github.com/user", {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: "application/json",
-            "User-Agent": "Shikigami-App",
-        },
-    });
-
-    const user = await userResponse.json();
-
     const response = NextResponse.redirect(
         new URL("/dashboard", request.url)
     );

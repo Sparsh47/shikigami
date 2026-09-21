@@ -1,10 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { prisma } from "@repo/db";
 import { createDeploymentSchema } from "../types/deployments.types.js";
-import { createKanikoJob } from "../infra/k8s.js";
+import { createKanikoJob, deleteJob, deployApp, readJob } from "../infra/k8s.js";
 
 export async function userRoutes(fastify: FastifyInstance) {
-    // ── GET /api/deployments?userId=<id> ─────────────────────────────────────
     fastify.get("/", async (request, reply) => {
         const { userId } = request.query as { userId?: string };
 
@@ -46,6 +45,46 @@ export async function userRoutes(fastify: FastifyInstance) {
         } catch (error) {
             fastify.log.error(error);
             return reply.status(500).send({ error: "Failed to fetch deployments" });
+        }
+    });
+
+    fastify.get("/:id", async (request, reply) => {
+        const { id } = request.params as { id: string };
+
+        try {
+            const deployment = await prisma.deployment.findUnique({
+                where: { id },
+                include: {
+                    agent: {
+                        select: {
+                            agentName: true,
+                            repoFullName: true,
+                            branch: true,
+                            framework: true,
+                        },
+                    },
+                },
+            });
+            if (!deployment) {
+                return reply.status(404).send({ error: `Deployment with id: ${id} not found` });
+            }
+            const shaped = {
+                id: deployment.id,
+                name: deployment.agent.agentName,
+                repo: deployment.agent.repoFullName,
+                branch: deployment.agent.branch,
+                framework: deployment.agent.framework,
+                status: deployment.status.toLowerCase() as "ready" | "building" | "failed" | "queued",
+                commitSha: deployment.commitSha ?? "latest",
+                commitMessage: deployment.commitMessage ?? "",
+                url: deployment.url ?? `https://${deployment.agent.agentName}.shikigami.app`,
+                createdAt: deployment.createdAt.toISOString(),
+                updatedAt: deployment.updatedAt.toISOString(),
+            };
+            return reply.send({ deployment: shaped });
+        } catch (error) {
+            fastify.log.error(error);
+            return reply.status(500).send({ error: `Failed to fetch deployment with id: ${id}` });
         }
     });
 
@@ -171,6 +210,7 @@ export async function userRoutes(fastify: FastifyInstance) {
 
 
             await createKanikoJob({ jobName: deployment.jobName!, gitContext, destination: `jestico/${deployment.jobName}` });
+            await watchJob(deployment.jobName!, deployment.id);
 
             return reply.status(201).send({
                 success: true,
@@ -186,6 +226,85 @@ export async function userRoutes(fastify: FastifyInstance) {
             });
         }
     });
+}
+
+async function watchJob(jobName: string, deploymentId: string) {
+    const POLL_INTERVAL_MS = 5_000;
+    const MAX_WAIT_MS = 10 * 60 * 1_000;
+    const startedAt = Date.now();
+
+    await prisma.deployment.update({
+        where: { id: deploymentId },
+        data: { status: "BUILDING", updatedAt: new Date() }
+    })
+
+    const interval = setInterval(async () => {
+        try {
+            if (Date.now() - startedAt > MAX_WAIT_MS) {
+                clearInterval(interval);
+                await prisma.deployment.update({
+                    where: { id: deploymentId },
+                    data: { status: "FAILED" },
+                });
+                return;
+            }
+
+            const job = await readJob(jobName);
+            const conditions = job.status?.conditions ?? [];
+
+            const succeeded = conditions.some((c) => c.type === "Complete" && c.status === "True");
+            const failed = conditions.some((c) => c.type === "Failed" && c.status === "True");
+
+            if (succeeded) {
+                clearInterval(interval);
+
+                // Fetch agent config to get port / resources / env vars
+                const deploymentRecord = await prisma.deployment.findUnique({
+                    where: { id: deploymentId },
+                    include: {
+                        agent: {
+                            include: { envVars: true },
+                        },
+                    },
+                });
+
+                if (deploymentRecord?.agent) {
+                    const { agent } = deploymentRecord;
+                    const appName = agent.agentName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+
+                    const appUrl = await deployApp({
+                        appName,
+                        image: `jestico/${jobName}`,
+                        port: agent.port,
+                        cpu: String(agent.cpu),
+                        memory: agent.memory,
+                        runCommand: agent.runCommand,
+                        env: agent.envVars.map((v) => ({ name: v.key, value: v.value })),
+                    });
+
+                    await prisma.deployment.update({
+                        where: { id: deploymentId },
+                        data: { status: "READY", url: appUrl, updatedAt: new Date() },
+                    });
+                } else {
+                    await prisma.deployment.update({
+                        where: { id: deploymentId },
+                        data: { status: "READY", updatedAt: new Date() },
+                    });
+                }
+                deleteJob(jobName);
+            } else if (failed) {
+                clearInterval(interval);
+                await prisma.deployment.update({
+                    where: { id: deploymentId },
+                    data: { status: "FAILED", updatedAt: new Date() },
+                });
+                deleteJob(jobName);
+            }
+        } catch (err) {
+            console.error(`[watchJob] Error polling job ${jobName}:`, err);
+        }
+    }, POLL_INTERVAL_MS);
 }
 
 // Semantic alias

@@ -4,8 +4,6 @@ import { GithubIcon } from "@/components/GithubIcon";
 import {
     ArrowRight,
     GitBranch,
-    Container,
-    Layers,
     BarChart3,
     Zap,
     Bot,
@@ -111,14 +109,14 @@ export default function Home() {
                         Continue with GitHub
                         <ArrowRight className="h-4 w-4" />
                     </Link>
-                    <a
-                        href="https://github.com"
+                    <Link
+                        href="https://github.com/Sparsh47/shikigami"
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm text-[#7a6e66] transition-colors hover:text-[#c4b8b0]"
+                        className="text-sm text-[#7a6e66] transition-colors hover:text-[#c4b8b0] flex items-center justify-center gap-2"
                     >
-                        View source →
-                    </a>
+                        View source <ArrowRight className="h-4 w-4" />
+                    </Link>
                 </div>
 
                 {/* Step strip */}
@@ -165,11 +163,10 @@ export default function Home() {
                             {["Deployments", "Logs", "Settings"].map((item, i) => (
                                 <div
                                     key={item}
-                                    className={`rounded-lg px-3 py-1.5 text-[11px] ${
-                                        i === 0
-                                            ? "bg-[#c96b3e]/10 text-[#c96b3e] font-medium"
-                                            : "text-[#7a6e66]"
-                                    }`}
+                                    className={`rounded-lg px-3 py-1.5 text-[11px] ${i === 0
+                                        ? "bg-[#c96b3e]/10 text-[#c96b3e] font-medium"
+                                        : "text-[#7a6e66]"
+                                        }`}
                                 >
                                     {item}
                                 </div>
@@ -204,11 +201,10 @@ export default function Home() {
                                             </div>
                                         </div>
                                         <span
-                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                                                agent.status === "Ready"
-                                                    ? "bg-emerald-500/10 text-emerald-400"
-                                                    : "bg-amber-500/10 text-amber-400"
-                                            }`}
+                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${agent.status === "Ready"
+                                                ? "bg-emerald-500/10 text-emerald-400"
+                                                : "bg-amber-500/10 text-amber-400"
+                                                }`}
                                         >
                                             <span className={`h-1 w-1 rounded-full ${agent.status === "Ready" ? "bg-emerald-400" : "bg-amber-400 animate-pulse"}`} />
                                             {agent.status}

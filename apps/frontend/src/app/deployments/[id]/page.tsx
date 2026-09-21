@@ -95,27 +95,27 @@ function logLevelColor(level: LogLine["level"]) {
 // ─── Mock log generator (replace with real SSE/WS later) ─────────────────────
 
 const BUILD_LOG_SEQUENCE: Omit<LogLine, "ts">[] = [
-    { level: "info",  msg: "Initializing Kaniko build context…" },
-    { level: "info",  msg: "Cloning repository from GitHub…" },
+    { level: "info", msg: "Initializing Kaniko build context…" },
+    { level: "info", msg: "Cloning repository from GitHub…" },
     { level: "debug", msg: "git clone --depth=1 --branch main" },
-    { level: "info",  msg: "Checking out commit HEAD" },
-    { level: "info",  msg: "Detecting Dockerfile…" },
-    { level: "warn",  msg: "No Dockerfile found, using framework preset." },
-    { level: "info",  msg: "Generating Dockerfile from LangGraph preset" },
-    { level: "info",  msg: "COPY . ." },
-    { level: "info",  msg: "RUN pip install -r requirements.txt" },
-    { level: "info",  msg: "Collecting numpy==1.24.3" },
-    { level: "info",  msg: "Collecting langchain-core==0.1.8" },
+    { level: "info", msg: "Checking out commit HEAD" },
+    { level: "info", msg: "Detecting Dockerfile…" },
+    { level: "warn", msg: "No Dockerfile found, using framework preset." },
+    { level: "info", msg: "Generating Dockerfile from LangGraph preset" },
+    { level: "info", msg: "COPY . ." },
+    { level: "info", msg: "RUN pip install -r requirements.txt" },
+    { level: "info", msg: "Collecting numpy==1.24.3" },
+    { level: "info", msg: "Collecting langchain-core==0.1.8" },
     { level: "debug", msg: "Downloading langchain_core-0.1.8-py3-none-any.whl (178 kB)" },
-    { level: "info",  msg: "Collecting openai>=1.0.0" },
-    { level: "info",  msg: "Successfully installed all packages" },
-    { level: "info",  msg: "Pushing image to registry: jestico/agent:latest" },
-    { level: "info",  msg: "Digest: sha256:a3b4c5d6e7f8…" },
-    { level: "info",  msg: "Build complete. Creating Kubernetes Deployment…" },
-    { level: "info",  msg: "Deployment shikigami/agent-pod created." },
-    { level: "info",  msg: "Waiting for pod to become Ready…" },
-    { level: "info",  msg: "Pod is Running. Container started on port 8080." },
-    { level: "info",  msg: "Health-check passed — agent is live 🎉" },
+    { level: "info", msg: "Collecting openai>=1.0.0" },
+    { level: "info", msg: "Successfully installed all packages" },
+    { level: "info", msg: "Pushing image to registry: jestico/agent:latest" },
+    { level: "info", msg: "Digest: sha256:a3b4c5d6e7f8…" },
+    { level: "info", msg: "Build complete. Creating Kubernetes Deployment…" },
+    { level: "info", msg: "Deployment shikigami/agent-pod created." },
+    { level: "info", msg: "Waiting for pod to become Ready…" },
+    { level: "info", msg: "Pod is Running. Container started on port 8080." },
+    { level: "info", msg: "Health-check passed — agent is live 🎉" },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -182,24 +182,29 @@ export default function DeploymentDetailPage() {
         fetch("/api/auth/github/me")
             .then((r) => r.ok ? r.json() : null)
             .then((d) => d && setUser(d.user))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     // ── Load deployment from localStorage ─────────────────────────────────────
     useEffect(() => {
-        try {
-            const saved: AgentDeployment[] = JSON.parse(
-                localStorage.getItem("shikigami_deployments") || "[]"
-            );
-            const found = saved.find((d) => d.id === id);
-            if (found) {
-                setDeployment(found);
-            } else {
+        async function fetchDeployment() {
+            try {
+                const res = await fetch(`/api/deployments/${id}`);
+                const deploymentRes = await res.json();
+                const deployment = deploymentRes.deployment;
+                console.log("deployment: ", deployment);
+
+                if (deployment) {
+                    setDeployment(deployment);
+                } else {
+                    setNotFound(true);
+                }
+            } catch {
                 setNotFound(true);
             }
-        } catch {
-            setNotFound(true);
         }
+
+        fetchDeployment();
     }, [id]);
 
     // ── Auto-stream build logs ─────────────────────────────────────────────────
@@ -484,19 +489,18 @@ export default function DeploymentDetailPage() {
                             <ol className="relative space-y-3 ml-1">
                                 {(
                                     [
-                                        { step: "Queued",   done: true },
+                                        { step: "Queued", done: true },
                                         { step: "Building", done: deployment.status !== "queued" },
-                                        { step: "Pushing",  done: deployment.status === "ready" || deployment.status === "failed" },
-                                        { step: "Live",     done: deployment.status === "ready" },
+                                        { step: "Pushing", done: deployment.status === "ready" || deployment.status === "failed" },
+                                        { step: "Live", done: deployment.status === "ready" },
                                     ] as const
                                 ).map(({ step, done }, i) => (
                                     <li key={i} className="flex items-center gap-3">
                                         <span
-                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${
-                                                done
-                                                    ? "bg-[#c96b3e]/20 border-[#c96b3e]/40 text-[#c96b3e]"
-                                                    : "bg-[#1a1714] border-[#2e2924] text-[#7a6e66]"
-                                            }`}
+                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${done
+                                                ? "bg-[#c96b3e]/20 border-[#c96b3e]/40 text-[#c96b3e]"
+                                                : "bg-[#1a1714] border-[#2e2924] text-[#7a6e66]"
+                                                }`}
                                         >
                                             {done ? <Check className="h-2.5 w-2.5" /> : i + 1}
                                         </span>

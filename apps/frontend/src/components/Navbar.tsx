@@ -7,6 +7,7 @@ import { ShikigamiLogo } from "./ShikigamiLogo";
 import { ProfileModal } from "./ProfileModal";
 import { GitHubUser } from "@/types/user";
 import { User, Settings, LogOut } from "lucide-react";
+import Image from "next/image";
 
 interface NavbarProps {
     user?: GitHubUser | null;
@@ -29,7 +30,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
         fetch("/api/auth/github/me")
             .then((res) => (res.ok ? res.json() : null))
             .then((data) => { if (isMounted && data) setUser(data.user); })
-            .catch(() => {});
+            .catch(() => { });
         return () => { isMounted = false; };
     }, [initialUser]);
 
@@ -83,10 +84,12 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                     aria-expanded={isDropdownOpen}
                                     className="flex h-7 w-7 items-center justify-center rounded-full ring-2 ring-transparent transition-all hover:ring-[#c96b3e]/40 focus:outline-none"
                                 >
-                                    <img
+                                    <Image
                                         src={user.avatar_url}
                                         alt={user.login}
                                         className="h-7 w-7 rounded-full object-cover"
+                                        width={200}
+                                        height={200}
                                     />
                                 </button>
 

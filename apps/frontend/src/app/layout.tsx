@@ -1,5 +1,18 @@
 import type { Metadata, Viewport } from "next";
+import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -68,7 +81,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#1a1714] text-[#c4b8b0] antialiased selection:bg-[#c96b3e]/30 selection:text-[#e8ddd5]">
+      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-screen bg-[#1a1714] text-[#c4b8b0] antialiased selection:bg-[#c96b3e]/30 selection:text-[#e8ddd5]`}>
         {children}
       </body>
     </html>

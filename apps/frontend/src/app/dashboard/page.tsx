@@ -4,23 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { GitHubUser } from "@/types/user";
+import { AgentDeployment } from "@/types/repo";
 import {
     Plus,
     Search,
     ExternalLink,
     GitBranch,
     GitCommit,
-    Clock,
     Loader2,
     Bot,
-    Server,
     RefreshCw,
     Layers,
-    Circle,
     AlertCircle,
 } from "lucide-react";
-
-import { AgentDeployment } from "@/types/repo";
 
 type DeployStatus = "ready" | "building" | "failed" | "queued";
 
@@ -33,7 +29,6 @@ export default function Dashboard() {
     const [statusFilter, setStatusFilter] = useState<"all" | DeployStatus>("all");
     const [deployments, setDeployments] = useState<AgentDeployment[]>([]);
 
-    // ── Fetch deployments from backend, fall back to localStorage ─────────────
     async function loadDeployments(userId: string) {
         setDeploymentsLoading(true);
         setDeploymentsError(null);
@@ -59,7 +54,6 @@ export default function Dashboard() {
                 if (!response.ok) { setLoading(false); return; }
                 const data = await response.json();
                 setUser(data.user);
-                // Load deployments once we know the userId
                 await loadDeployments(String(data.user.id));
             } catch (error) {
                 console.error("Failed to load user:", error);
@@ -150,11 +144,10 @@ export default function Dashboard() {
                             <button
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
-                                className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
-                                    statusFilter === s
-                                        ? "bg-[#c96b3e] text-white"
-                                        : "text-[#7a6e66] hover:text-[#e8ddd5]"
-                                }`}
+                                className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${statusFilter === s
+                                    ? "bg-[#c96b3e] text-white"
+                                    : "text-[#7a6e66] hover:text-[#e8ddd5]"
+                                    }`}
                             >
                                 {s}
                             </button>

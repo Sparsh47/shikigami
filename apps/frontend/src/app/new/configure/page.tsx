@@ -206,7 +206,9 @@ function ConfigureAgentContent() {
         }
 
         const buildCmd = overrideBuild ? customBuildCmd : selectedFramework.defaultBuild;
-        const runCmd = overrideRun ? customRunCmd : selectedFramework.defaultRun;
+        const rawRunCmd = overrideRun ? customRunCmd : selectedFramework.defaultRun;
+        // "container entrypoint" is a placeholder — don't send it, let the image's CMD take over
+        const runCmd = rawRunCmd === "container entrypoint" ? "" : rawRunCmd;
         const cpuValue = parseFloat(cpu.replace(/[^0-9.]/g, "")) || 1.0;
 
         const payload = {
