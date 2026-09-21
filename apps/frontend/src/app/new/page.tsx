@@ -200,7 +200,7 @@ export default function NewAgentPage() {
                                     className="flex items-center justify-between gap-4 px-6 py-3.5 transition-colors hover:bg-[var(--bg-base)]/60"
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-base)] text-[var(--text-muted)] border border-[var(--border)]">
+                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-base)] text-[var(--text-muted)]">
                                             {repo.private ? (
                                                 <Lock className="h-3 w-3" />
                                             ) : (

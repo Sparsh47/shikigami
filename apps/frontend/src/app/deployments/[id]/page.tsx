@@ -84,11 +84,12 @@ function relativeTime(iso: string) {
 }
 
 function logLevelColor(level: LogLine["level"]) {
+    // Always on dark terminal bg — use bright, saturated colors
     switch (level) {
         case "error": return "text-red-400";
-        case "warn": return "text-amber-400";
-        case "info": return "text-[var(--text-body)]";
-        case "debug": return "text-[var(--text-muted)]";
+        case "warn":  return "text-amber-300";
+        case "info":  return "text-sky-400";
+        case "debug": return "text-slate-400";
     }
 }
 
@@ -384,9 +385,10 @@ export default function DeploymentDetailPage() {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto h-[400px] p-4 font-mono text-xs space-y-0.5 bg-[#181511]">
+                        {/* Terminal always stays dark — intentional regardless of theme */}
+                        <div className="flex-1 overflow-y-auto h-[400px] p-4 font-mono text-xs space-y-0.5 bg-[#0f0e0c]">
                             {logs.length === 0 ? (
-                                <div className="flex items-center justify-center h-full text-[var(--text-muted)]">
+                                <div className="flex items-center justify-center h-full text-slate-500">
                                     {deployment.status === "ready" ? (
                                         <span>Build completed — logs archived.</span>
                                     ) : (
@@ -399,13 +401,15 @@ export default function DeploymentDetailPage() {
                             ) : (
                                 logs.map((line, i) => (
                                     <div key={i} className="flex gap-3 leading-relaxed group">
-                                        <span className="shrink-0 text-[#3e3730] group-hover:text-[var(--text-muted)] transition-colors select-none">
+                                        {/* Timestamp — always visible on dark bg */}
+                                        <span className="shrink-0 text-slate-600 group-hover:text-slate-400 transition-colors select-none">
                                             {new Date(line.ts).toLocaleTimeString("en-US", { hour12: false })}
                                         </span>
                                         <span className={`shrink-0 w-10 uppercase text-[10px] font-bold tracking-wider ${logLevelColor(line.level)}`}>
                                             {line.level}
                                         </span>
-                                        <span className="text-[var(--text-body)] break-all">{line.msg}</span>
+                                        {/* Message — always light on dark terminal bg */}
+                                        <span className="text-slate-200 break-all">{line.msg}</span>
                                     </div>
                                 ))
                             )}
