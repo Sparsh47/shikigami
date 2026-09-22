@@ -115,6 +115,10 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         limits: { cpu, memory },
     };
 
+    // Force inject the expected PORT into the environment so the app binds to the correct port
+    const finalEnv = env.filter(e => e.name !== "PORT");
+    finalEnv.push({ name: "PORT", value: port.toString() });
+
     const deploymentManifest: k8s.V1Deployment = {
         apiVersion: "apps/v1",
         kind: "Deployment",
@@ -133,7 +137,7 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
                             ...(command && { command }),
                             ports: [{ containerPort: port }],
                             resources,
-                            env,
+                            env: finalEnv,
                         },
                     ],
                 },
@@ -146,7 +150,9 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
             name: appName,
             namespace: NAMESPACE,
         });
-        deploymentManifest.metadata!.resourceVersion = existing.metadata!.resourceVersion;
+        if (existing.metadata?.resourceVersion) {
+            deploymentManifest.metadata!.resourceVersion = existing.metadata.resourceVersion;
+        }
         await appsV1Api.replaceNamespacedDeployment({
             name: appName,
             namespace: NAMESPACE,
@@ -172,7 +178,7 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
         spec: {
             selector: labels,
             ports: [{ port: 80, targetPort: port as any }],
-            type: "ClusterIP",
+            type: "NodePort",
         },
     };
 
@@ -181,12 +187,18 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
             name: serviceName,
             namespace: NAMESPACE,
         });
-        serviceManifest.metadata!.resourceVersion = existing.metadata!.resourceVersion;
+        if (existing.metadata?.resourceVersion) {
+            serviceManifest.metadata!.resourceVersion = existing.metadata.resourceVersion;
+        }
         // retain clusterIP if needed, though replace usually works if omitted? Wait!
         // Services often complain if clusterIP is missing during replace. 
         // Let's copy it over just in case it's a ClusterIP service.
         if (existing.spec && existing.spec.clusterIP) {
             serviceManifest.spec!.clusterIP = existing.spec.clusterIP;
+        }
+        // Preserve nodePort if it was already assigned by K8s
+        if (existing.spec && existing.spec.ports?.[0]?.nodePort) {
+            serviceManifest.spec!.ports![0].nodePort = existing.spec.ports[0].nodePort;
         }
         await coreV1Api.replaceNamespacedService({
             name: serviceName,
@@ -245,7 +257,9 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
             name: ingressName,
             namespace: NAMESPACE,
         });
-        ingressManifest.metadata!.resourceVersion = existing.metadata!.resourceVersion;
+        if (existing.metadata?.resourceVersion) {
+            ingressManifest.metadata!.resourceVersion = existing.metadata.resourceVersion;
+        }
         await networkingV1Api.replaceNamespacedIngress({
             name: ingressName,
             namespace: NAMESPACE,

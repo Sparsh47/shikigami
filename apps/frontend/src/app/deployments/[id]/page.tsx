@@ -133,8 +133,8 @@ function StatCard({
     mono?: boolean;
 }) {
     return (
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-base)] border border-[var(--border)] text-[#c96b3e]">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md p-4 flex items-start gap-3 transition-colors hover:bg-[var(--bg-elevated)] hover:border-[var(--accent)]/50">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-base)] border border-[var(--border)] text-[var(--accent)] shadow-sm">
                 {icon}
             </div>
             <div className="min-w-0">
@@ -229,6 +229,21 @@ export default function DeploymentDetailPage() {
         };
     }, [id]);
 
+    const handleRedeploy = async () => {
+        if (!deployment) return;
+        try {
+            const res = await fetch(`/api/deployments/${deployment.id}/redeploy`, {
+                method: "POST",
+            });
+            if (res.ok) {
+                const data = await res.json();
+                window.location.href = `/deployments/${data.deploymentId}`;
+            }
+        } catch (e) {
+            console.error("Failed to redeploy", e);
+        }
+    };
+
     // ── Stream real-time logs via SSE ──────────────────────────────────────────
     const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -303,7 +318,7 @@ export default function DeploymentDetailPage() {
             <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar user={user ?? undefined} />
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
+                    <Loader2 className="h-5 w-5 animate-spin text-[var(--accent)]" />
                 </div>
             </div>
         );
@@ -320,12 +335,12 @@ export default function DeploymentDetailPage() {
                     <div>
                         <h2 className="text-base font-semibold text-[var(--text-heading)]">Deployment not found</h2>
                         <p className="mt-1 text-sm text-[var(--text-muted)]">
-                            No deployment with ID <span className="font-mono text-[#c96b3e]">{id}</span> exists locally.
+                            No deployment with ID <span className="font-mono text-[var(--accent)]">{id}</span> exists locally.
                         </p>
                     </div>
                     <Link
                         href="/dashboard"
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-heading)] hover:border-[#c96b3e]/40 transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text-heading)] hover:border-[var(--accent)]/50 transition-colors shadow-sm"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" />
                         Back to Dashboard
@@ -350,13 +365,13 @@ export default function DeploymentDetailPage() {
                             Deployments
                         </Link>
                         <span>/</span>
-                        <span className="text-[#c96b3e] truncate max-w-[200px]">{deployment.name}</span>
+                        <span className="text-[var(--accent)] truncate max-w-[200px]">{deployment.name}</span>
                     </div>
 
                     {/* ── Header ───────────────────────────────────────────────── */}
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="flex items-center gap-3.5">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-[#c96b3e]">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--accent)] shadow-sm backdrop-blur-md">
                                 <Box className="h-5 w-5" />
                             </div>
                             <div>
@@ -378,13 +393,14 @@ export default function DeploymentDetailPage() {
                                 href={deployment.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-2 text-xs font-medium text-[var(--text-heading)] hover:border-[#c96b3e]/40 transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-2 text-xs font-medium text-[var(--text-heading)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-muted)] transition-all shadow-sm"
                             >
                                 Visit
                                 <ExternalLink className="h-3 w-3 text-[var(--text-muted)]" />
                             </a>
                             <button
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-[#c96b3e]/30 bg-[#c96b3e]/10 px-3.5 py-2 text-xs font-medium text-[#c96b3e] hover:bg-[#c96b3e]/15 transition-colors cursor-pointer"
+                                onClick={handleRedeploy}
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--accent)]/40 bg-[var(--accent-subtle)] px-3.5 py-2 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)] transition-all cursor-pointer shadow-sm"
                                 title="Redeploy"
                             >
                                 <RefreshCw className="h-3 w-3" />
@@ -423,10 +439,10 @@ export default function DeploymentDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                     {/* ── Build Logs ─────────────────────────────────────────── */}
-                    <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden flex flex-col">
-                        <div className="border-b border-[var(--border)] px-5 py-3.5 flex items-center justify-between">
+                    <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md overflow-hidden flex flex-col shadow-lg shadow-black/10">
+                        <div className="border-b border-[var(--border)] bg-[var(--bg-base)]/50 px-5 py-3.5 flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
-                                <Terminal className="h-4 w-4 text-[#c96b3e]" />
+                                <Terminal className="h-4 w-4 text-[var(--text-muted)]" />
                                 <h2 className="text-sm font-semibold text-[var(--text-heading)]">Build Logs</h2>
                                 {logsRunning && (
                                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-400">
@@ -452,7 +468,7 @@ export default function DeploymentDetailPage() {
                                         <span className="text-red-400">Build failed.</span>
                                     ) : (
                                         <span className="flex items-center gap-2">
-                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-[#c96b3e]" />
+                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-[var(--accent)]" />
                                             Waiting for build logs…
                                         </span>
                                     )}
@@ -480,15 +496,15 @@ export default function DeploymentDetailPage() {
                     <div className="space-y-4">
 
                         {/* Deployment URL */}
-                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
+                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md p-4 shadow-sm">
                             <div className="flex items-center gap-2 mb-3">
-                                <Globe className="h-3.5 w-3.5 text-[#c96b3e]" />
+                                <Globe className="h-3.5 w-3.5 text-[var(--accent)]" />
                                 <h3 className="text-xs font-semibold text-[var(--text-heading)] uppercase tracking-wider">
                                     Endpoint
                                 </h3>
                             </div>
                             <div className="flex items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2">
-                                <span className="font-mono text-[11px] text-[#c96b3e] truncate">
+                                <span className="font-mono text-[11px] text-[var(--accent)] truncate">
                                     {deployment.url}
                                 </span>
                                 <CopyButton text={deployment.url} />
@@ -497,7 +513,7 @@ export default function DeploymentDetailPage() {
                                 href={deployment.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[#c96b3e]/30 transition-colors"
+                                className="mt-3 flex items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--accent)]/50 transition-colors"
                             >
                                 Open endpoint
                                 <ExternalLink className="h-3 w-3" />
@@ -505,9 +521,9 @@ export default function DeploymentDetailPage() {
                         </div>
 
                         {/* Repo info */}
-                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4 space-y-3">
+                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md p-4 space-y-3 shadow-sm">
                             <div className="flex items-center gap-2 mb-1">
-                                <Zap className="h-3.5 w-3.5 text-[#c96b3e]" />
+                                <Zap className="h-3.5 w-3.5 text-[var(--accent)]" />
                                 <h3 className="text-xs font-semibold text-[var(--text-heading)] uppercase tracking-wider">
                                     Source
                                 </h3>
@@ -541,9 +557,9 @@ export default function DeploymentDetailPage() {
                         </div>
 
                         {/* Status timeline */}
-                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-4">
+                        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md p-4 shadow-sm">
                             <div className="flex items-center gap-2 mb-4">
-                                <Cpu className="h-3.5 w-3.5 text-[#c96b3e]" />
+                                <Cpu className="h-3.5 w-3.5 text-[var(--accent)]" />
                                 <h3 className="text-xs font-semibold text-[var(--text-heading)] uppercase tracking-wider">
                                     Pipeline
                                 </h3>
@@ -578,7 +594,7 @@ export default function DeploymentDetailPage() {
                                         <span
                                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-colors ${
                                                 state === "done"
-                                                    ? "bg-[#c96b3e]/20 border-[#c96b3e]/40 text-[#c96b3e]"
+                                                    ? "bg-[var(--accent-subtle)] border-[var(--accent)]/40 text-[var(--accent)] shadow-[0_0_8px_var(--accent-subtle)]"
                                                     : state === "current"
                                                     ? "bg-amber-500/20 border-amber-500/40 text-amber-400"
                                                     : state === "failed"

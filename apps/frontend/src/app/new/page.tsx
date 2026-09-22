@@ -129,7 +129,7 @@ export default function NewAgentPage() {
                     {/* Card Header */}
                     <div className="border-b border-[var(--border)] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5">
-                            <FolderGit2 className="h-4 w-4 text-[#c96b3e]" />
+                            <FolderGit2 className="h-4 w-4 text-[var(--accent)]" />
                             <h2 className="text-sm font-semibold text-[var(--text-heading)]">Import Git Repository</h2>
                         </div>
 
@@ -155,7 +155,7 @@ export default function NewAgentPage() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search repositories..."
-                                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                 />
                             </div>
 
@@ -165,7 +165,7 @@ export default function NewAgentPage() {
                                         key={type}
                                         onClick={() => setFilterType(type)}
                                         className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${filterType === type
-                                            ? "bg-[#c96b3e] text-white"
+                                            ? "bg-[var(--accent)] text-white"
                                             : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
                                             }`}
                                     >
@@ -180,7 +180,7 @@ export default function NewAgentPage() {
                     <div className="divide-y divide-[var(--border)] max-h-100 overflow-y-auto">
                         {reposLoading ? (
                             <div className="py-14 text-center">
-                                <Loader2 className="mx-auto h-5 w-5 animate-spin text-[#c96b3e]" />
+                                <Loader2 className="mx-auto h-5 w-5 animate-spin text-[var(--accent)]" />
                                 <p className="mt-3 text-xs text-[var(--text-muted)]">Loading repositories…</p>
                             </div>
                         ) : filteredRepos.length === 0 ? (
@@ -223,7 +223,7 @@ export default function NewAgentPage() {
                                             <div className="mt-0.5 flex items-center gap-2.5 text-[11px] text-[var(--text-muted)]">
                                                 {repo.language && (
                                                     <span className="flex items-center gap-1">
-                                                        <span className="h-1.5 w-1.5 rounded-full bg-[#c96b3e]" />
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
                                                         {repo.language}
                                                     </span>
                                                 )}
@@ -234,7 +234,7 @@ export default function NewAgentPage() {
 
                                     <button
                                         onClick={() => handleImportRepo(repo)}
-                                        className="shrink-0 rounded-lg bg-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-body)] hover:bg-[#c96b3e] hover:text-white transition-all inline-flex items-center gap-1.5 cursor-pointer group/btn"
+                                        className="shrink-0 rounded-lg bg-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--accent)] hover:text-white transition-all inline-flex items-center gap-1.5 cursor-pointer group/btn"
                                     >
                                         <span>Import</span>
                                         <ArrowRight className="h-3 w-3 text-[var(--text-muted)] group-hover/btn:text-white group-hover/btn:translate-x-0.5 transition-transform" />
@@ -261,12 +261,12 @@ export default function NewAgentPage() {
                                     if (e.key === "Enter") handleCustomImport();
                                 }}
                                 placeholder="https://github.com/org/repo.git"
-                                className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#c96b3e]/50 transition-colors w-56"
+                                className="rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)]/50 transition-colors w-56"
                             />
                             <button
                                 onClick={handleCustomImport}
                                 disabled={!customGitUrl.trim()}
-                                className="rounded-lg bg-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-body)] hover:bg-[#c96b3e] hover:text-white disabled:opacity-40 disabled:hover:bg-[var(--border)] disabled:hover:text-[var(--text-body)] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                className="rounded-lg bg-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-body)] hover:bg-[var(--accent)] hover:text-white disabled:opacity-40 disabled:hover:bg-[var(--border)] disabled:hover:text-[var(--text-body)] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                             >
                                 <span>Import</span>
                                 <ArrowRight className="h-3 w-3" />

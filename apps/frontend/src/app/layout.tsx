@@ -71,7 +71,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1a1714",
+  themeColor: "#09090b",
   colorScheme: "dark",
 };
 
@@ -82,7 +82,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] antialiased selection:bg-[#c96b3e]/30 selection:text-[var(--text-heading)]`}>
+      <body className={`${outfit.variable} ${jetbrainsMono.variable} font-sans min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] antialiased selection:bg-[var(--accent)]/30 selection:text-[var(--text-heading)]`}>
+        {/* Background glow effects */}
+        <div className="fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[rgba(56,189,248,0.07)] via-[var(--bg-base)] to-[var(--bg-base)]"></div>
+        <div className="fixed top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--accent)]/20 to-transparent"></div>
+        
         <ThemeProvider>
           {children}
         </ThemeProvider>

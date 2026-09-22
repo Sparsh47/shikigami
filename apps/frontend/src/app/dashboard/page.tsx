@@ -69,7 +69,7 @@ export default function Dashboard() {
             <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
+                    <Loader2 className="h-5 w-5 animate-spin text-[var(--accent)]" />
                 </div>
             </div>
         );
@@ -81,7 +81,7 @@ export default function Dashboard() {
                 <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-8 max-w-md w-full">
-                        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-[#c96b3e]/10 text-[#c96b3e] mb-4">
+                        <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)] mb-4">
                             <Bot className="h-5 w-5" />
                         </div>
                         <h2 className="text-lg font-semibold text-[var(--text-heading)]">Authentication required</h2>
@@ -90,7 +90,7 @@ export default function Dashboard() {
                         </p>
                         <Link
                             href="/api/auth/github"
-                            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-[#c96b3e] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#b85e34]"
+                            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
                         >
                             Sign in with GitHub
                         </Link>
@@ -119,7 +119,7 @@ export default function Dashboard() {
 
                     <Link
                         href="/new"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#c96b3e] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#b85e34] shrink-0"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)] shrink-0"
                     >
                         <Plus className="h-4 w-4" />
                         Add New Agent
@@ -135,7 +135,7 @@ export default function Dashboard() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search deployments..."
-                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none focus:ring-0 transition-colors"
+                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:outline-none focus:ring-0 transition-colors"
                         />
                     </div>
 
@@ -145,7 +145,7 @@ export default function Dashboard() {
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
                                 className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${statusFilter === s
-                                    ? "bg-[#c96b3e] text-white"
+                                    ? "bg-[var(--accent)] text-white"
                                     : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
                                     }`}
                             >
@@ -218,7 +218,7 @@ export default function Dashboard() {
                                 </p>
                                 <Link
                                     href="/new"
-                                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#c96b3e] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#b85e34] shadow-sm"
+                                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] shadow-sm"
                                 >
                                     <Plus className="h-4 w-4" />
                                     Add New Agent
@@ -266,7 +266,7 @@ export default function Dashboard() {
                                 <Link
                                     key={dep.id}
                                     href={`/deployments/${dep.id}`}
-                                    className="block rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 transition-all hover:border-[#c96b3e]/40 cursor-pointer"
+                                    className="block rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 transition-all hover:border-[var(--accent)]/40 cursor-pointer"
                                 >
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="space-y-1.5">
@@ -301,7 +301,7 @@ export default function Dashboard() {
                                                     e.preventDefault();
                                                     window.open(dep.url, "_blank", "noreferrer");
                                                 }}
-                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-medium text-[var(--text-heading)] hover:border-[#c96b3e]/40 hover:text-white transition-colors cursor-pointer"
+                                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-medium text-[var(--text-heading)] hover:border-[var(--accent)]/40 hover:text-white transition-colors cursor-pointer"
                                             >
                                                 Visit
                                                 <ExternalLink className="h-3 w-3 text-[var(--text-muted)]" />

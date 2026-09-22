@@ -248,6 +248,75 @@ export async function userRoutes(fastify: FastifyInstance) {
         }
     });
 
+    fastify.post("/:id/redeploy", async (request, reply) => {
+        const { id } = request.params as { id: string };
+        try {
+            const oldDeployment = await prisma.deployment.findUnique({
+                where: { id },
+                include: { agent: true }
+            });
+
+            if (!oldDeployment) {
+                return reply.status(404).send({ error: "Deployment not found" });
+            }
+
+            const agent = oldDeployment.agent;
+            const cleanName = agent.agentName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+            const jobName = `kaniko-${cleanName}-${Date.now()}`;
+
+            const newDeployment = await prisma.deployment.create({
+                data: {
+                    agentId: agent.id,
+                    status: "QUEUED",
+                    jobName,
+                    commitSha: oldDeployment.commitSha,
+                    commitMessage: oldDeployment.commitMessage,
+                    url: oldDeployment.url,
+                },
+            });
+
+            const gitRef = oldDeployment.commitSha || `refs/heads/${agent.branch}`;
+            const gitContext = `git://github.com/${agent.repoFullName}.git#${gitRef}`;
+
+            await flowProducer.add({
+                name: "deploy",
+                queueName: "deploy",
+                data: {
+                    deploymentId: newDeployment.id,
+                    image: `jestico/${newDeployment.jobName}`
+                },
+                children: [
+                    {
+                        name: "build",
+                        queueName: "build",
+                        data: {
+                            deploymentId: newDeployment.id,
+                            appName: agent.agentName,
+                            gitContext,
+                            image: `jestico/${newDeployment.jobName}`,
+                            port: agent.port,
+                            cpu: agent.cpu,
+                            memory: agent.memory,
+                            runCommand: agent.runCommand,
+                            kanikoJobName: `kaniko-${newDeployment.id}`
+                        }
+                    }
+                ]
+            });
+
+            return reply.status(201).send({
+                success: true,
+                deploymentId: newDeployment.id,
+            });
+        } catch (error) {
+            fastify.log.error(error);
+            return reply.status(500).send({
+                error: "Failed to redeploy",
+                message: error instanceof Error ? error.message : "Internal Server Error",
+            });
+        }
+    });
+
     fastify.get("/:id/logs", async (request, reply) => {
         const { id } = request.params as { id: string };
 

@@ -48,10 +48,10 @@ export default function Home() {
         <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] overflow-x-hidden">
 
             {/* Navbar */}
-            <header className="border-b border-[var(--border)] backdrop-blur-md sticky top-0 z-40 bg-[var(--bg-base)]/90">
+            <header className="border-b border-[var(--border)] backdrop-blur-xl sticky top-0 z-40 bg-[var(--bg-base)]/70">
                 <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
                     <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c96b3e]/10 ring-1 ring-[var(--border)]">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--accent-subtle)] ring-1 ring-[var(--border)] shadow-[0_0_12px_var(--accent-subtle)]">
                             <ShikigamiLogo className="h-4.5 w-4.5" />
                         </div>
                         <span className="text-sm font-semibold tracking-tight text-[var(--text-heading)]">
@@ -60,7 +60,7 @@ export default function Home() {
                     </div>
                     <Link
                         href="/api/auth/github"
-                        className="flex items-center gap-2 rounded-lg bg-[#c96b3e] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#b85e34]"
+                        className="flex items-center gap-2 rounded-lg bg-[var(--bg-surface)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-heading)] transition-all hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] hover:border-[var(--accent)] hover:shadow-[0_0_15px_var(--accent-subtle)]"
                     >
                         <GithubIcon className="h-3.5 w-3.5" />
                         Sign in
@@ -73,21 +73,21 @@ export default function Home() {
                 {/* Ambient glow */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[480px] w-[700px] rounded-full opacity-30"
-                    style={{ background: "radial-gradient(ellipse at center, #c96b3e22 0%, transparent 70%)" }}
+                    className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[480px] w-[700px] rounded-full opacity-20"
+                    style={{ background: "radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)" }}
                 />
 
                 {/* Badge */}
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#c96b3e]/20 bg-[#c96b3e]/8 px-3 py-1 text-xs font-medium text-[#c96b3e] mb-8">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#c96b3e] animate-pulse" />
+                <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md px-3 py-1 text-xs font-medium text-[var(--text-heading)] mb-8 shadow-sm">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)] animate-pulse" />
                     Early Access — Now Available
                 </div>
 
-                <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-[var(--text-heading)] sm:text-5xl lg:text-6xl leading-[1.1]">
+                <h1 className="mx-auto max-w-4xl text-5xl font-bold tracking-tighter text-[var(--text-heading)] sm:text-6xl lg:text-7xl leading-[1.1]">
                     Deploy AI agents{" "}
                     <span
-                        className="bg-clip-text text-transparent"
-                        style={{ backgroundImage: "linear-gradient(135deg, #c96b3e, #e8956a)" }}
+                        className="bg-clip-text text-transparent block mt-2"
+                        style={{ backgroundImage: "linear-gradient(135deg, #f0f9ff, var(--accent))" }}
                     >
                         like you deploy websites
                     </span>
@@ -102,12 +102,11 @@ export default function Home() {
                 <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Link
                         href="/api/auth/github"
-                        className="inline-flex items-center gap-2.5 rounded-xl bg-[#c96b3e] px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#b85e34] hover:shadow-[#c96b3e]/20"
-                        style={{ boxShadow: "0 8px 24px -4px rgba(201,107,62,0.25)" }}
+                        className="inline-flex items-center gap-2.5 rounded-xl bg-[var(--text-heading)] text-[var(--bg-base)] px-6 py-3 text-sm font-semibold shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_0_25px_var(--accent-subtle)]"
                     >
                         <GithubIcon className="h-4 w-4" />
                         Continue with GitHub
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                     <Link
                         href="https://github.com/Sparsh47/shikigami"
@@ -123,12 +122,12 @@ export default function Home() {
                 <div className="mt-16 flex flex-wrap items-center justify-center gap-2">
                     {STEPS.map((s, idx) => (
                         <div key={s.step} className="flex items-center gap-2">
-                            <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-1.5">
-                                <span className="text-[10px] font-mono text-[#c96b3e]">{s.step}</span>
+                            <div className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md px-4 py-1.5 shadow-sm transition-all hover:border-[var(--accent)]/50 hover:bg-[var(--bg-elevated)]">
+                                <span className="text-[10px] font-mono text-[var(--accent)] font-medium">{s.step}</span>
                                 <span className="text-xs text-[var(--text-body)]">{s.label}</span>
                             </div>
                             {idx < STEPS.length - 1 && (
-                                <ArrowRight className="h-3 w-3 text-[var(--border)]" />
+                                <ArrowRight className="h-3 w-3 text-[var(--text-muted)]" />
                             )}
                         </div>
                     ))}
@@ -155,8 +154,8 @@ export default function Home() {
                         {/* Sidebar */}
                         <div className="hidden sm:flex w-48 shrink-0 flex-col border-r border-[var(--border)] p-4 gap-1">
                             <div className="mb-4 flex items-center gap-2">
-                                <div className="h-5 w-5 rounded bg-[#c96b3e]/10 flex items-center justify-center">
-                                    <Bot className="h-3 w-3 text-[#c96b3e]" />
+                                <div className="h-5 w-5 rounded bg-[var(--accent-subtle)] flex items-center justify-center">
+                                    <Bot className="h-3 w-3 text-[var(--accent)]" />
                                 </div>
                                 <span className="text-[11px] font-semibold text-[var(--text-heading)]">Shikigami</span>
                             </div>
@@ -164,7 +163,7 @@ export default function Home() {
                                 <div
                                     key={item}
                                     className={`rounded-lg px-3 py-1.5 text-[11px] ${i === 0
-                                        ? "bg-[#c96b3e]/10 text-[#c96b3e] font-medium"
+                                        ? "bg-[var(--accent-subtle)] text-[var(--accent)] font-medium"
                                         : "text-[var(--text-muted)]"
                                         }`}
                                 >
@@ -177,7 +176,7 @@ export default function Home() {
                         <div className="flex-1 p-5">
                             <div className="flex items-center justify-between mb-4">
                                 <p className="text-xs font-semibold text-[var(--text-heading)]">Deployments</p>
-                                <div className="rounded-lg bg-[#c96b3e] px-3 py-1 text-[10px] font-medium text-white">
+                                <div className="rounded-lg bg-[var(--text-heading)] px-3 py-1 text-[10px] font-medium text-[var(--bg-base)]">
                                     Add New Agent
                                 </div>
                             </div>
@@ -189,11 +188,11 @@ export default function Home() {
                                 ].map((agent) => (
                                     <div
                                         key={agent.name}
-                                        className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-4 py-3"
+                                        className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-4 py-3"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="h-6 w-6 rounded-lg bg-[var(--border)] flex items-center justify-center">
-                                                <Bot className="h-3 w-3 text-[#c96b3e]" />
+                                            <div className="h-6 w-6 rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center">
+                                                <Bot className="h-3 w-3 text-[var(--accent)]" />
                                             </div>
                                             <div>
                                                 <p className="text-[11px] font-medium text-[var(--text-heading)]">{agent.name}</p>
@@ -232,9 +231,9 @@ export default function Home() {
                     {FEATURES.map(({ Icon, title, description }) => (
                         <div
                             key={title}
-                            className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6 hover:border-[#c96b3e]/30 transition-colors"
+                            className="group rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md p-6 hover:border-[var(--accent)] transition-all hover:bg-[var(--bg-elevated)] hover:shadow-[0_0_20px_var(--accent-subtle)]"
                         >
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--bg-base)] border border-[var(--border)] text-[#c96b3e] mb-4">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--bg-base)] border border-[var(--border)] text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors mb-4">
                                 <Icon className="h-4 w-4" />
                             </div>
                             <h3 className="text-sm font-semibold text-[var(--text-heading)]">{title}</h3>
@@ -255,8 +254,7 @@ export default function Home() {
                     </p>
                     <Link
                         href="/api/auth/github"
-                        className="mt-8 inline-flex items-center gap-2.5 rounded-xl bg-[#c96b3e] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#b85e34]"
-                        style={{ boxShadow: "0 8px 24px -4px rgba(201,107,62,0.25)" }}
+                        className="mt-8 inline-flex items-center gap-2.5 rounded-xl bg-[var(--text-heading)] text-[var(--bg-base)] px-6 py-3 text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_var(--accent-subtle)]"
                     >
                         <GithubIcon className="h-4 w-4" />
                         Get started with GitHub

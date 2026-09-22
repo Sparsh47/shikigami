@@ -281,7 +281,7 @@ function ConfigureAgentContent() {
                             {displayRepoName.split("/")[1]}
                         </Link>
                         <span>/</span>
-                        <span className="text-[#c96b3e]">Configure</span>
+                        <span className="text-[var(--accent)]">Configure</span>
                     </div>
 
                     <Link
@@ -303,7 +303,7 @@ function ConfigureAgentContent() {
                 {/* Repository Identity Card */}
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-base)] text-[#c96b3e] border border-[var(--border)]">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-base)] text-[var(--accent)] border border-[var(--border)]">
                             <FolderGit2 className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -323,7 +323,7 @@ function ConfigureAgentContent() {
                                     </span>
                                 )}
                                 {templateParam && (
-                                    <span className="rounded-md bg-[#c96b3e]/15 border border-[#c96b3e]/30 px-2 py-0.5 text-[10px] font-medium text-[#c96b3e]">
+                                    <span className="rounded-md bg-[var(--accent)]/15 border border-[var(--accent)]/30 px-2 py-0.5 text-[10px] font-medium text-[var(--accent)]">
                                         Template: {templateParam}
                                     </span>
                                 )}
@@ -362,7 +362,7 @@ function ConfigureAgentContent() {
                     {/* Section 1: General Project & Framework Settings */}
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
                         <div className="border-b border-[var(--border)] px-6 py-4 flex items-center gap-2.5">
-                            <Sliders className="h-4 w-4 text-[#c96b3e]" />
+                            <Sliders className="h-4 w-4 text-[var(--accent)]" />
                             <h2 className="text-sm font-semibold text-[var(--text-heading)]">Project Settings</h2>
                         </div>
 
@@ -377,7 +377,7 @@ function ConfigureAgentContent() {
                                         value={agentName}
                                         onChange={(e) => setAgentName(e.target.value)}
                                         placeholder="my-agent"
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                     />
                                     <p className="mt-1.5 text-[11px] text-[var(--text-muted)] font-mono">
                                         Domain: https://{agentName.trim().toLowerCase().replace(/[^a-z0-9-]/g, "") || "agent"}.shikigami.app
@@ -391,7 +391,7 @@ function ConfigureAgentContent() {
                                     <select
                                         value={selectedFramework.id}
                                         onChange={handleFrameworkChange}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors cursor-pointer"
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors cursor-pointer"
                                     >
                                         {FRAMEWORK_OPTIONS.map((f) => (
                                             <option key={f.id} value={f.id}>
@@ -416,7 +416,7 @@ function ConfigureAgentContent() {
                                             type="text"
                                             value={branch}
                                             onChange={(e) => setBranch(e.target.value)}
-                                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                         />
                                     </div>
                                 </div>
@@ -430,7 +430,7 @@ function ConfigureAgentContent() {
                                         value={rootDir}
                                         onChange={(e) => setRootDir(e.target.value)}
                                         placeholder="./"
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors font-mono"
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors font-mono"
                                     />
                                 </div>
                             </div>
@@ -445,7 +445,7 @@ function ConfigureAgentContent() {
                             className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-[var(--bg-base)]/30 transition-colors"
                         >
                             <div className="flex items-center gap-2.5">
-                                <Terminal className="h-4 w-4 text-[#c96b3e]" />
+                                <Terminal className="h-4 w-4 text-[var(--accent)]" />
                                 <div>
                                     <h2 className="text-sm font-semibold text-[var(--text-heading)]">
                                         Build & Output Settings
@@ -472,7 +472,7 @@ function ConfigureAgentContent() {
                                         <button
                                             type="button"
                                             onClick={() => setOverrideBuild(!overrideBuild)}
-                                            className="text-[11px] font-medium text-[#c96b3e] hover:underline"
+                                            className="text-[11px] font-medium text-[var(--accent)] hover:underline"
                                         >
                                             {overrideBuild ? "Reset to default" : "Override"}
                                         </button>
@@ -482,7 +482,7 @@ function ConfigureAgentContent() {
                                         disabled={!overrideBuild}
                                         value={customBuildCmd}
                                         onChange={(e) => setCustomBuildCmd(e.target.value)}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-mono text-[var(--text-heading)] disabled:opacity-60 disabled:cursor-not-allowed focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-mono text-[var(--text-heading)] disabled:opacity-60 disabled:cursor-not-allowed focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                     />
                                 </div>
 
@@ -494,7 +494,7 @@ function ConfigureAgentContent() {
                                         <button
                                             type="button"
                                             onClick={() => setOverrideRun(!overrideRun)}
-                                            className="text-[11px] font-medium text-[#c96b3e] hover:underline"
+                                            className="text-[11px] font-medium text-[var(--accent)] hover:underline"
                                         >
                                             {overrideRun ? "Reset to default" : "Override"}
                                         </button>
@@ -504,7 +504,7 @@ function ConfigureAgentContent() {
                                         disabled={!overrideRun}
                                         value={customRunCmd}
                                         onChange={(e) => setCustomRunCmd(e.target.value)}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-mono text-[var(--text-heading)] disabled:opacity-60 disabled:cursor-not-allowed focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-mono text-[var(--text-heading)] disabled:opacity-60 disabled:cursor-not-allowed focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                     />
                                 </div>
 
@@ -516,7 +516,7 @@ function ConfigureAgentContent() {
                                         type="text"
                                         value={port}
                                         onChange={(e) => setPort(e.target.value)}
-                                        className="w-32 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-mono text-[var(--text-heading)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                        className="w-32 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-xs font-mono text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                     />
                                 </div>
                             </div>
@@ -527,7 +527,7 @@ function ConfigureAgentContent() {
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
                         <div className="border-b border-[var(--border)] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
-                                <Database className="h-4 w-4 text-[#c96b3e]" />
+                                <Database className="h-4 w-4 text-[var(--accent)]" />
                                 <div>
                                     <h2 className="text-sm font-semibold text-[var(--text-heading)]">
                                         Environment Variables
@@ -541,7 +541,7 @@ function ConfigureAgentContent() {
                             <button
                                 type="button"
                                 onClick={() => addEnvVar()}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] hover:text-white hover:border-[#c96b3e]/40 transition-colors self-start sm:self-auto cursor-pointer"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] hover:text-white hover:border-[var(--accent)]/40 transition-colors self-start sm:self-auto cursor-pointer"
                             >
                                 <Plus className="h-3 w-3" />
                                 Add Variable
@@ -560,7 +560,7 @@ function ConfigureAgentContent() {
                                             key={key}
                                             type="button"
                                             onClick={() => addEnvVar(key)}
-                                            className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-base)] px-2 py-0.5 text-[10px] font-mono text-[var(--text-muted)] hover:text-[#c96b3e] hover:border-[#c96b3e]/40 transition-colors cursor-pointer"
+                                            className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-base)] px-2 py-0.5 text-[10px] font-mono text-[var(--text-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)]/40 transition-colors cursor-pointer"
                                         >
                                             <Plus className="h-2.5 w-2.5" />
                                             {key}
@@ -588,7 +588,7 @@ function ConfigureAgentContent() {
                                                     value={v.key}
                                                     onChange={(e) => updateEnvVar(v.id, "key", e.target.value)}
                                                     placeholder="KEY (e.g. OPENAI_API_KEY)"
-                                                    className="w-full sm:w-1/3 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-mono text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                                    className="w-full sm:w-1/3 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-mono text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                                 />
 
                                                 <div className="relative flex-1">
@@ -597,7 +597,7 @@ function ConfigureAgentContent() {
                                                         value={v.value}
                                                         onChange={(e) => updateEnvVar(v.id, "value", e.target.value)}
                                                         placeholder="Value"
-                                                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] py-1.5 pl-3 pr-8 text-xs font-mono text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[#c96b3e]/50 focus:outline-none transition-colors"
+                                                        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-base)] py-1.5 pl-3 pr-8 text-xs font-mono text-[var(--text-heading)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors"
                                                     />
                                                     {v.isSecret && (
                                                         <button
@@ -632,7 +632,7 @@ function ConfigureAgentContent() {
                     {/* Section 4: Agent Compute & Scaling */}
                     <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
                         <div className="border-b border-[var(--border)] px-6 py-4 flex items-center gap-2.5">
-                            <Cpu className="h-4 w-4 text-[#c96b3e]" />
+                            <Cpu className="h-4 w-4 text-[var(--accent)]" />
                             <h2 className="text-sm font-semibold text-[var(--text-heading)]">
                                 Compute & Scaling Profile
                             </h2>
@@ -650,7 +650,7 @@ function ConfigureAgentContent() {
                                             type="button"
                                             onClick={() => setMemory(m)}
                                             className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${memory === m
-                                                ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
+                                                ? "bg-[var(--accent)]/15 text-[var(--accent)] border-[var(--accent)]/40"
                                                 : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
                                                 }`}
                                         >
@@ -671,7 +671,7 @@ function ConfigureAgentContent() {
                                             type="button"
                                             onClick={() => setCpu(c)}
                                             className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${cpu === c
-                                                ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
+                                                ? "bg-[var(--accent)]/15 text-[var(--accent)] border-[var(--accent)]/40"
                                                 : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
                                                 }`}
                                         >
@@ -695,7 +695,7 @@ function ConfigureAgentContent() {
                                             type="button"
                                             onClick={() => setScalingMode(mode.id as typeof scalingMode)}
                                             className={`rounded-lg py-1.5 text-xs font-medium transition-colors cursor-pointer border ${scalingMode === mode.id
-                                                ? "bg-[#c96b3e]/15 text-[#c96b3e] border-[#c96b3e]/40"
+                                                ? "bg-[var(--accent)]/15 text-[var(--accent)] border-[var(--accent)]/40"
                                                 : "bg-[var(--bg-base)] text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-heading)]"
                                                 }`}
                                         >
@@ -710,20 +710,20 @@ function ConfigureAgentContent() {
 
                 {/* Deployment Progress Bar / Status Banner when deploying */}
                 {isDeploying && (
-                    <div className="rounded-2xl border border-[#c96b3e]/30 bg-[var(--bg-surface)] p-6 shadow-xl">
+                    <div className="rounded-2xl border border-[var(--accent)]/30 bg-[var(--bg-surface)] p-6 shadow-xl">
                         <div className="flex items-center gap-3">
-                            <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--accent)]" />
                             <div className="flex-1">
                                 <h4 className="text-sm font-semibold text-[var(--text-heading)]">
                                     Deploying Agent to Kubernetes…
                                 </h4>
-                                <p className="text-xs text-[#c96b3e] font-mono mt-0.5">
+                                <p className="text-xs text-[var(--accent)] font-mono mt-0.5">
                                     {deployStep}
                                 </p>
                             </div>
                         </div>
                         <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-base)]">
-                            <div className="h-full bg-[#c96b3e] animate-pulse w-3/4 rounded-full" />
+                            <div className="h-full bg-[var(--accent)] animate-pulse w-3/4 rounded-full" />
                         </div>
                     </div>
                 )}
@@ -748,7 +748,7 @@ function ConfigureAgentContent() {
                         type="button"
                         onClick={handleDeploy}
                         disabled={isDeploying || !agentName.trim()}
-                        className="inline-flex items-center gap-2 rounded-xl bg-[#c96b3e] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#b85e34] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-[#c96b3e]/20 cursor-pointer"
+                        className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-[var(--accent)]/20 cursor-pointer"
                     >
                         {isDeploying ? (
                             <>
@@ -775,7 +775,7 @@ export default function ConfigureAgentPage() {
                 <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                     <Navbar />
                     <div className="flex-1 flex items-center justify-center">
-                        <Loader2 className="h-6 w-6 animate-spin text-[#c96b3e]" />
+                        <Loader2 className="h-6 w-6 animate-spin text-[var(--accent)]" />
                     </div>
                 </div>
             }

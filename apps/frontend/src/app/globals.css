@@ -7,33 +7,33 @@
 
 
 :root {
-    --bg-base: #1a1714;
-    --bg-surface: #211e1a;
-    --bg-elevated: #2a2520;
-    --border: #2e2924;
-    --border-muted: #252118;
-    --text-heading: #e8ddd5;
-    --text-body: #c4b8b0;
-    --text-muted: #7a6e66;
-    --accent: #c96b3e;
-    --accent-hover: #b85e34;
-    --accent-subtle: rgba(201, 107, 62, 0.1);
+    --bg-base: #09090b;
+    --bg-surface: rgba(255, 255, 255, 0.03);
+    --bg-elevated: rgba(255, 255, 255, 0.05);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-muted: rgba(255, 255, 255, 0.04);
+    --text-heading: #fafafa;
+    --text-body: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #38bdf8;
+    --accent-hover: #0ea5e9;
+    --accent-subtle: rgba(56, 189, 248, 0.15);
 }
 
 /* Light theme */
 :root.light,
 .light {
-    --bg-base: #faf8f5;
-    --bg-surface: #f2ede8;
-    --bg-elevated: #e8e1d9;
-    --border: #d8cfc6;
-    --border-muted: #e4ddd6;
-    --text-heading: #1a1714;
-    --text-body: #3d342c;
-    --text-muted: #8a7b70;
-    --accent: #c96b3e;
-    --accent-hover: #b85e34;
-    --accent-subtle: rgba(201, 107, 62, 0.12);
+    --bg-base: #ffffff;
+    --bg-surface: #f4f4f5;
+    --bg-elevated: #e4e4e7;
+    --border: #e4e4e7;
+    --border-muted: #f4f4f5;
+    --text-heading: #09090b;
+    --text-body: #3f3f46;
+    --text-muted: #71717a;
+    --accent: #0284c7;
+    --accent-hover: #0369a1;
+    --accent-subtle: rgba(2, 132, 199, 0.1);
 }
 
 /* Apply CSS variables to elements using Tailwind's arbitrary value syntax */
@@ -69,18 +69,18 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #38322b;
+    background-color: rgba(255, 255, 255, 0.15);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #c96b3e;
+    background-color: var(--accent);
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background-color: #b85e34;
+    background-color: var(--accent-hover);
 }
 
 ::-webkit-scrollbar-corner {

@@ -51,8 +51,8 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
             <div className="absolute inset-0" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-2xl shadow-black/60">
-                {/* Header strip */}
+            <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-base)]/95 backdrop-blur-xl shadow-2xl shadow-black/60">
+                {/* Header background with gradient */}
                 <div
                     className="h-24 relative flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, #1a1714 0%, #2a1f18 50%, #1a1714 100%)" }}
@@ -60,7 +60,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                     {/* Subtle glow */}
                     <div
                         className="absolute inset-0 opacity-30"
-                        style={{ background: "radial-gradient(ellipse at 30% 50%, #c96b3e44 0%, transparent 70%)" }}
+                        style={{ background: "radial-gradient(ellipse at 30% 50%, var(--accent)44 0%, transparent 70%)" }}
                     />
 
                     <button
@@ -90,7 +90,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                                 href={user.html_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] transition-colors hover:border-[#c96b3e]/40 hover:text-[var(--text-heading)]"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] transition-colors hover:border-[var(--accent)]/40 hover:text-[var(--text-heading)]"
                             >
                                 GitHub
                                 <ExternalLink className="h-3 w-3" />
@@ -123,7 +123,7 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                                 className={`flex flex-col items-center justify-center p-1 ${idx === 1 ? "border-x border-[var(--border)]" : ""}`}
                             >
                                 <span className="flex items-center gap-1 text-[10px] font-medium text-[var(--text-muted)]">
-                                    <Icon className="h-3 w-3 text-[#c96b3e]" />
+                                    <Icon className="h-3 w-3 text-[var(--accent)]" />
                                     {label}
                                 </span>
                                 <span className="mt-1 text-base font-semibold text-[var(--text-heading)]">
@@ -136,34 +136,34 @@ export function ProfileModal({ user, isOpen, onClose }: ProfileModalProps) {
                     {/* Details */}
                     <div className="mt-5 space-y-2.5 text-xs text-[var(--text-muted)]">
                         <div className="flex items-center gap-2">
-                            <Mail className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
                             <span>{user.email ?? "No public email"}</span>
                         </div>
 
                         {user.company && (
                             <div className="flex items-center gap-2">
-                                <Building2 className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
+                                <Building2 className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
                                 <span>{user.company}</span>
                             </div>
                         )}
 
                         {user.location && (
                             <div className="flex items-center gap-2">
-                                <MapPin className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
+                                <MapPin className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
                                 <span>{user.location}</span>
                             </div>
                         )}
 
                         {user.twitter_username && (
                             <div className="flex items-center gap-2">
-                                <AtSign className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
+                                <AtSign className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
                                 <span>@{user.twitter_username}</span>
                             </div>
                         )}
 
                         {formattedDate && (
                             <div className="flex items-center gap-2">
-                                <Calendar className="h-3.5 w-3.5 shrink-0 text-[#c96b3e]" />
+                                <Calendar className="h-3.5 w-3.5 shrink-0 text-[var(--accent)]" />
                                 <span>Joined GitHub {formattedDate}</span>
                             </div>
                         )}

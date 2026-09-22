@@ -47,7 +47,7 @@ function ThemeDropdown() {
             <button
                 onClick={() => setOpen((p) => !p)}
                 aria-label="Change theme"
-                className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-body)] transition-colors hover:border-[#c96b3e]/40 hover:text-[var(--text-heading)]"
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] backdrop-blur-md px-2.5 py-1.5 text-xs font-medium text-[var(--text-body)] transition-colors hover:border-[var(--accent)]/50 hover:text-[var(--text-heading)] shadow-sm"
             >
                 <CurrentIcon className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">{current.label}</span>
@@ -55,7 +55,7 @@ function ThemeDropdown() {
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-xl shadow-black/40 z-50">
+                <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-xl border border-[var(--border)] bg-[var(--bg-base)]/95 backdrop-blur-xl shadow-xl shadow-black/40 z-50">
                     <div className="p-1">
                         {THEMES.map(({ value, label, icon: Icon }) => (
                             <button
@@ -63,14 +63,14 @@ function ThemeDropdown() {
                                 onClick={() => { setTheme(value); setOpen(false); }}
                                 className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs transition-colors
                                     ${theme === value
-                                        ? "bg-[#c96b3e]/10 text-[#c96b3e]"
-                                        : "text-[var(--text-body)] hover:bg-[var(--border)] hover:text-[var(--text-heading)]"
+                                        ? "bg-[var(--accent-subtle)] text-[var(--accent)]"
+                                        : "text-[var(--text-body)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-heading)]"
                                     }`}
                             >
                                 <Icon className="h-3.5 w-3.5 shrink-0" />
                                 {label}
                                 {theme === value && (
-                                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#c96b3e]" />
+                                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_8px_var(--accent)]" />
                                 )}
                             </button>
                         ))}
@@ -134,7 +134,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                         href={user ? "/dashboard" : "/"}
                         className="group flex items-center gap-2.5"
                     >
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#c96b3e]/10 ring-1 ring-[var(--border)] transition-transform group-hover:scale-105">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--accent-subtle)] ring-1 ring-[var(--border)] shadow-[0_0_8px_var(--accent-subtle)] transition-transform group-hover:scale-105">
                             <ShikigamiLogo className="h-4.5 w-4.5" />
                         </div>
                         <span className="text-sm font-semibold tracking-tight text-[var(--text-heading)]">
@@ -153,7 +153,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                     onClick={() => setIsDropdownOpen((p) => !p)}
                                     aria-label="User menu"
                                     aria-expanded={isDropdownOpen}
-                                    className="flex h-7 w-7 items-center justify-center rounded-full ring-2 ring-transparent transition-all hover:ring-[#c96b3e]/40 focus:outline-none"
+                                    className="flex h-7 w-7 items-center justify-center rounded-full ring-2 ring-transparent transition-all hover:ring-[var(--accent)]/50 focus:outline-none"
                                 >
                                     <Image
                                         src={user.avatar_url}
@@ -165,7 +165,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                 </button>
 
                                 {isDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-xl shadow-black/40">
+                                    <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-[var(--border)] bg-[var(--bg-base)]/95 backdrop-blur-xl shadow-xl shadow-black/40 z-50">
                                         {/* Identity */}
                                         <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-[var(--border)]">
                                             <img
@@ -190,7 +190,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                                     setIsDropdownOpen(false);
                                                     setIsProfileOpen(true);
                                                 }}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[var(--text-body)] transition-colors hover:bg-[var(--border)] hover:text-[var(--text-heading)]"
+                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[var(--text-body)] transition-colors hover:bg-[var(--bg-elevated)] hover:text-[var(--text-heading)]"
                                             >
                                                 <User className="h-3.5 w-3.5" />
                                                 View Profile
@@ -199,7 +199,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                             <Link
                                                 href="/settings"
                                                 onClick={() => setIsDropdownOpen(false)}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[var(--text-body)] transition-colors hover:bg-[var(--border)] hover:text-[var(--text-heading)]"
+                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[var(--text-body)] transition-colors hover:bg-[var(--bg-elevated)] hover:text-[var(--text-heading)]"
                                             >
                                                 <Settings className="h-3.5 w-3.5" />
                                                 Settings
@@ -213,7 +213,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                                                     handleLogout();
                                                 }}
                                                 disabled={isLoggingOut}
-                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-[#c96b3e]/80 transition-colors hover:bg-[#c96b3e]/10 hover:text-[#c96b3e] disabled:opacity-50"
+                                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-red-400/80 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
                                             >
                                                 <LogOut className="h-3.5 w-3.5" />
                                                 {isLoggingOut ? "Logging out…" : "Log out"}
@@ -225,7 +225,7 @@ export function Navbar({ user: initialUser }: NavbarProps) {
                         ) : (
                             <Link
                                 href="/api/auth/github"
-                                className="rounded-lg bg-[#c96b3e] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#b85e34]"
+                                className="rounded-lg bg-[var(--bg-surface)] border border-[var(--border)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-heading)] transition-all hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)] shadow-sm"
                             >
                                 Sign in
                             </Link>

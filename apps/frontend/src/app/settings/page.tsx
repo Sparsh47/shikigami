@@ -63,7 +63,7 @@ export default function SettingsPage() {
             <div className="min-h-screen bg-[var(--bg-base)] flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-[#c96b3e]" />
+                    <Loader2 className="h-5 w-5 animate-spin text-[var(--accent)]" />
                 </div>
             </div>
         );
@@ -134,7 +134,7 @@ export default function SettingsPage() {
                                             key={label}
                                             className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-1 text-xs font-mono text-[var(--text-body)]"
                                         >
-                                            <Icon className="h-3 w-3 text-[#c96b3e]" />
+                                            <Icon className="h-3 w-3 text-[var(--accent)]" />
                                             {label}
                                         </span>
                                     ))}
