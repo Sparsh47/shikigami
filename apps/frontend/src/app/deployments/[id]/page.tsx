@@ -229,40 +229,65 @@ export default function DeploymentDetailPage() {
         };
     }, [id]);
 
-    // ── Auto-stream build logs (only once per deployment) ─────────────────────
-    const logsFinishedRef = useRef(false);
-    const streamingStartedRef = useRef(false);
+    // ── Stream real-time logs via SSE ──────────────────────────────────────────
+    const eventSourceRef = useRef<EventSource | null>(null);
 
     useEffect(() => {
         if (!deployment) return;
-        if (deployment.status !== "building" && deployment.status !== "queued") {
+
+        // If deployment is already done or failed when page loads, we don't need to connect
+        // unless you want to stream past logs if they are persisted. (Kaniko pods are deleted, so no logs persist).
+        if (deployment.status === "ready" || deployment.status === "failed") {
             setLogsRunning(false);
             return;
         }
-        if (streamingStartedRef.current || logsFinishedRef.current) return;
 
-        streamingStartedRef.current = true;
+        if (eventSourceRef.current) return;
+
         setLogsRunning(true);
-        logIndexRef.current = 0;
+        const sse = new EventSource(`http://localhost:8080/api/deployments/${deployment.id}/logs`);
+        eventSourceRef.current = sse;
 
-        logIntervalRef.current = setInterval(() => {
-            const idx = logIndexRef.current;
-            if (idx >= BUILD_LOG_SEQUENCE.length) {
-                setLogsRunning(false);
-                logsFinishedRef.current = true;
-                clearInterval(logIntervalRef.current!);
-                return;
+        sse.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === "event") {
+                    setLogs((prev) => [
+                        ...prev,
+                        {
+                            ts: data.timestamp || new Date().toISOString(),
+                            level: data.status.includes("FAILED") ? "error" : data.status.includes("POLLING") ? "debug" : "info",
+                            msg: `[EVENT] ${data.message}`
+                        }
+                    ]);
+                } else if (data.type === "log" || data.type === "syslog") {
+                    setLogs((prev) => [
+                        ...prev,
+                        {
+                            ts: new Date().toISOString(),
+                            level: "info",
+                            msg: data.message
+                        }
+                    ]);
+                }
+            } catch (e) {
+                console.error("Failed to parse SSE message", e);
             }
-            const entry = BUILD_LOG_SEQUENCE[idx];
-            setLogs((prev) => [
-                ...prev,
-                { ...entry, ts: new Date().toISOString() },
-            ]);
-            logIndexRef.current += 1;
-        }, 420);
+        };
+
+        sse.onerror = () => {
+            // If the connection drops or the server closes it (e.g. build finished)
+            sse.close();
+            eventSourceRef.current = null;
+            setLogsRunning(false);
+        };
 
         return () => {
-            if (logIntervalRef.current) clearInterval(logIntervalRef.current);
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
+            }
         };
     }, [deployment?.id, deployment?.status]);
 

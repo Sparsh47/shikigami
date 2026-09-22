@@ -1,29 +1,27 @@
 {
-  "name": "api",
+  "name": "worker",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "check-types": "tsc --noEmit"
   },
-  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "tsx": "^4.23.13"
+  },
   "dependencies": {
-    "@fastify/cors": "^11.3.0",
     "@repo/db": "*",
     "@repo/k8s": "*",
     "@repo/queue": "*",
     "@repo/redis": "*",
-    "fastify": "^5.12.4",
-    "zod": "^4.6.5"
-  },
-  "devDependencies": {
-    "@types/node": "^26.5.1",
-    "tsx": "^4.23.13"
+    "bullmq": "^6.3.8"
   }
 }

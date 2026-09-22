@@ -1,7 +1,10 @@
 import { FastifyInstance } from "fastify";
+import * as stream from "stream";
 import { prisma } from "@repo/db";
 import { createDeploymentSchema } from "../types/deployments.types.js";
-import { createKanikoJob, deleteJob, deployApp, readJob } from "../infra/k8s.js";
+import { flowProducer } from "@repo/queue";
+import { createRedisClient } from "@repo/redis";
+import { streamJobLogs } from "@repo/k8s";
 
 export async function userRoutes(fastify: FastifyInstance) {
     fastify.get("/", async (request, reply) => {
@@ -204,10 +207,31 @@ export async function userRoutes(fastify: FastifyInstance) {
             const gitRef = commitSha || `refs/heads/${branch}`;
             const gitContext = `git://github.com/${repoFullName}.git#${gitRef}`;
 
-
-            await createKanikoJob({ jobName: deployment.jobName!, gitContext, destination: `jestico/${deployment.jobName}`, cache: false });
-
-            await watchJob(deployment.jobName!, deployment.id);
+            await flowProducer.add({
+                name: "deploy",
+                queueName: "deploy",
+                data: {
+                    deploymentId: deployment.id,
+                    image: `jestico/${deployment.jobName}`
+                },
+                children: [
+                    {
+                        name: "build",
+                        queueName: "build",
+                        data: {
+                            deploymentId: deployment.id,
+                            appName: agentName,
+                            gitContext,
+                            image: `jestico/${deployment.jobName}`,
+                            port,
+                            cpu,
+                            memory,
+                            runCommand,
+                            kanikoJobName: `kaniko-${deployment.id}`
+                        }
+                    }
+                ]
+            });
 
             return reply.status(201).send({
                 success: true,
@@ -223,85 +247,83 @@ export async function userRoutes(fastify: FastifyInstance) {
             });
         }
     });
-}
 
-async function watchJob(jobName: string, deploymentId: string) {
-    const POLL_INTERVAL_MS = 5_000;
-    const MAX_WAIT_MS = 10 * 60 * 1_000;
-    const startedAt = Date.now();
+    fastify.get("/:id/logs", async (request, reply) => {
+        const { id } = request.params as { id: string };
 
-    await prisma.deployment.update({
-        where: { id: deploymentId },
-        data: { status: "BUILDING", updatedAt: new Date() }
-    })
+        reply.raw.setHeader("Content-Type", "text/event-stream");
+        reply.raw.setHeader("Cache-Control", "no-cache");
+        reply.raw.setHeader("Connection", "keep-alive");
+        reply.raw.setHeader("Access-Control-Allow-Origin", "*");
 
-    const interval = setInterval(async () => {
-        try {
-            if (Date.now() - startedAt > MAX_WAIT_MS) {
-                clearInterval(interval);
-                await prisma.deployment.update({
-                    where: { id: deploymentId },
-                    data: { status: "FAILED" },
-                });
-                return;
+        // 1. Subscribe to Redis high-level events
+        const subClient = createRedisClient();
+        await subClient.subscribe(`deployment-events:${id}`);
+        
+        subClient.on("message", (channel, message) => {
+            if (channel === `deployment-events:${id}`) {
+                const data = JSON.parse(message);
+                reply.raw.write(`data: ${JSON.stringify({ type: "event", ...data })}\n\n`);
             }
+        });
 
-            const job = await readJob(jobName);
-            const conditions = job.status?.conditions ?? [];
+        // 2. Stream Kaniko Pod logs if applicable
+        // Find the deployment to get the kaniko job name
+        const deployment = await prisma.deployment.findUnique({
+            where: { id }
+        });
 
-            const succeeded = conditions.some((c) => c.type === "Complete" && c.status === "True");
-            const failed = conditions.some((c) => c.type === "Failed" && c.status === "True");
-
-            if (succeeded) {
-                clearInterval(interval);
-
-                // Fetch agent config to get port / resources / env vars
-                const deploymentRecord = await prisma.deployment.findUnique({
-                    where: { id: deploymentId },
-                    include: {
-                        agent: {
-                            include: { envVars: true },
-                        },
-                    },
-                });
-
-                if (deploymentRecord?.agent) {
-                    const { agent } = deploymentRecord;
-                    const appName = agent.agentName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-
-                    const appUrl = await deployApp({
-                        appName,
-                        image: `jestico/${jobName}`,
-                        port: agent.port,
-                        cpu: String(agent.cpu),
-                        memory: agent.memory,
-                        runCommand: agent.runCommand,
-                        env: agent.envVars.map((v) => ({ name: v.key, value: v.value })),
-                    });
-
-                    await prisma.deployment.update({
-                        where: { id: deploymentId },
-                        data: { status: "READY", url: appUrl, updatedAt: new Date() },
-                    });
-                } else {
-                    await prisma.deployment.update({
-                        where: { id: deploymentId },
-                        data: { status: "READY", updatedAt: new Date() },
-                    });
+        if (deployment && deployment.status !== "READY" && deployment.status !== "FAILED") {
+            const sseStream = new stream.Writable({
+                write(chunk, encoding, callback) {
+                    const logLine = chunk.toString();
+                    reply.raw.write(`data: ${JSON.stringify({ type: "log", message: logLine })}\n\n`);
+                    callback();
                 }
-                deleteJob(jobName);
-            } else if (failed) {
-                clearInterval(interval);
-                await prisma.deployment.update({
-                    where: { id: deploymentId },
-                    data: { status: "FAILED", updatedAt: new Date() },
+            });
+
+            let logStreamConnected = false;
+            
+            const tryConnectLogs = async () => {
+                try {
+                    await streamJobLogs(`kaniko-${id}`, sseStream);
+                    logStreamConnected = true;
+                } catch (err) {
+                    reply.raw.write(`data: ${JSON.stringify({ type: "syslog", message: "Waiting for pod to initialize..." })}\n\n`);
+                }
+            };
+
+            // Initial attempt
+            tryConnectLogs(); // don't await, let it run in background
+
+            // Poll every 3 seconds if not connected
+            const logCheckInterval = setInterval(() => {
+                if (!logStreamConnected) {
+                    tryConnectLogs();
+                } else {
+                    clearInterval(logCheckInterval);
+                }
+            }, 3000);
+
+            await new Promise<void>((resolve) => {
+                request.raw.on("close", () => {
+                    subClient.unsubscribe();
+                    subClient.quit();
+                    clearInterval(logCheckInterval);
+                    resolve();
                 });
-                deleteJob(jobName);
-            }
-        } catch (err) {
-            console.error(`[watchJob] Error polling job ${jobName}:`, err);
+            });
+        } else {
+            // For READY or FAILED deployments, just wait until client closes
+            await new Promise<void>((resolve) => {
+                request.raw.on("close", () => {
+                    subClient.unsubscribe();
+                    subClient.quit();
+                    resolve();
+                });
+            });
         }
-    }, POLL_INTERVAL_MS);
+    });
 }
 
 // Semantic alias

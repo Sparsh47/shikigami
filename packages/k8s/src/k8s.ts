@@ -1,3 +1,4 @@
+import { Writable } from "stream";
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
@@ -23,7 +24,7 @@ const NAMESPACE = "default";
 
 const KANIKO_JOB_YAML_PATH = path.join(__dirname, "manifests", "kaniko-job.yaml");
 
-interface KanikoJobOverrides {
+export interface KanikoJobOverrides {
     jobName?: string;
     gitContext?: string;
     destination?: string;
@@ -141,13 +142,18 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
     };
 
     try {
-        await appsV1Api.patchNamespacedDeployment({
+        const existing = await appsV1Api.readNamespacedDeployment({
+            name: appName,
+            namespace: NAMESPACE,
+        });
+        deploymentManifest.metadata!.resourceVersion = existing.metadata!.resourceVersion;
+        await appsV1Api.replaceNamespacedDeployment({
             name: appName,
             namespace: NAMESPACE,
             body: deploymentManifest,
         });
     } catch (err: any) {
-        if (err.statusCode === 404) {
+        if (err.code === 404 || err.statusCode === 404) {
             // First deploy — create it fresh
             await appsV1Api.createNamespacedDeployment({
                 namespace: NAMESPACE,
@@ -171,13 +177,24 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
     };
 
     try {
-        await coreV1Api.patchNamespacedService({
+        const existing = await coreV1Api.readNamespacedService({
+            name: serviceName,
+            namespace: NAMESPACE,
+        });
+        serviceManifest.metadata!.resourceVersion = existing.metadata!.resourceVersion;
+        // retain clusterIP if needed, though replace usually works if omitted? Wait!
+        // Services often complain if clusterIP is missing during replace. 
+        // Let's copy it over just in case it's a ClusterIP service.
+        if (existing.spec && existing.spec.clusterIP) {
+            serviceManifest.spec!.clusterIP = existing.spec.clusterIP;
+        }
+        await coreV1Api.replaceNamespacedService({
             name: serviceName,
             namespace: NAMESPACE,
             body: serviceManifest,
         });
     } catch (err: any) {
-        if (err.statusCode === 404) {
+        if (err.code === 404 || err.statusCode === 404) {
             await coreV1Api.createNamespacedService({
                 namespace: NAMESPACE,
                 body: serviceManifest,
@@ -188,7 +205,7 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
     }
 
     const ingressName = `${appName}-ingress`;
-    const host = `${appName}.vcap.me`;
+    const host = `${appName}.localtest.me`;
     const ingressManifest: k8s.V1Ingress = {
         apiVersion: "networking.k8s.io/v1",
         kind: "Ingress",
@@ -224,13 +241,18 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
     };
 
     try {
-        await networkingV1Api.patchNamespacedIngress({
+        const existing = await networkingV1Api.readNamespacedIngress({
+            name: ingressName,
+            namespace: NAMESPACE,
+        });
+        ingressManifest.metadata!.resourceVersion = existing.metadata!.resourceVersion;
+        await networkingV1Api.replaceNamespacedIngress({
             name: ingressName,
             namespace: NAMESPACE,
             body: ingressManifest,
         });
     } catch (err: any) {
-        if (err.statusCode === 404) {
+        if (err.code === 404 || err.statusCode === 404) {
             await networkingV1Api.createNamespacedIngress({
                 namespace: NAMESPACE,
                 body: ingressManifest,
@@ -241,4 +263,26 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
     }
 
     return `http://${host}:${INGRESS_NODE_PORT}`;
+}
+
+export async function streamJobLogs(jobName: string, outStream: Writable) {
+    const log = new k8s.Log(kc);
+    
+    // Find the pod for the job
+    const podsRes = await coreV1Api.listNamespacedPod({
+        namespace: NAMESPACE,
+        labelSelector: `job-name=${jobName}`
+    });
+    
+    if (!podsRes.items || podsRes.items.length === 0) {
+        throw new Error(`No pods found for job ${jobName}`);
+    }
+    
+    const pod = podsRes.items[0];
+    if (!pod || !pod.metadata?.name) {
+        throw new Error(`Pod has no name for job ${jobName}`);
+    }
+
+    const podName = pod.metadata.name;
+    await log.log(NAMESPACE, podName, "", outStream, { follow: true });
 }
