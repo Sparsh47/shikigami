@@ -293,7 +293,7 @@ export default function DeploymentDetailPage() {
 
     // ── Auto-scroll logs ───────────────────────────────────────────────────────
     useEffect(() => {
-        logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        logsEndRef.current?.scrollIntoView({ behavior: "auto" });
     }, [logs]);
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -443,7 +443,7 @@ export default function DeploymentDetailPage() {
                         </div>
 
                         {/* Terminal always stays dark — intentional regardless of theme */}
-                        <div className="flex-1 overflow-y-auto h-[400px] p-4 font-mono text-xs space-y-0.5 bg-[#0f0e0c]">
+                        <div className="overflow-y-auto h-[400px] p-4 font-mono text-xs space-y-0.5 bg-[#0f0e0c]">
                             {logs.length === 0 ? (
                                 <div className="flex items-center justify-center h-full text-slate-500">
                                     {deployment.status === "ready" ? (
