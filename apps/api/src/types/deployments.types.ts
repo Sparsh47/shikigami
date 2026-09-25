@@ -15,6 +15,7 @@ export const createDeploymentSchema = z.object({
     memory: z.string().default("1GB"),
     cpu: z.coerce.number().positive().default(1.0),
     scalingMode: z.string().default("serverless"),
+    dockerUsername: z.string().nullable().optional(),
     envVars: z
         .array(
             z.object({

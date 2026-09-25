@@ -16,3 +16,13 @@ export interface GitHubUser {
     following: number;
     created_at?: string;
 }
+
+export interface DockerUser {
+    username: string;
+    full_name: string | null;
+    company: string | null;
+    location: string | null;
+    gravatar_url: string | null;
+    date_joined: string | null;
+    type: string;
+}

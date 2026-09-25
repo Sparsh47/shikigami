@@ -117,10 +117,14 @@ export async function userRoutes(fastify: FastifyInstance) {
                 memory,
                 cpu,
                 scalingMode,
+                dockerUsername,
                 envVars,
                 commitSha,
                 commitMessage,
             } = parsed.data;
+
+            const PLATFORM_REGISTRY = "jestico";
+            const registry = dockerUsername ?? PLATFORM_REGISTRY;
 
             let agent = await prisma.agent.findFirst({
                 where: {
@@ -146,6 +150,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                         memory,
                         cpu,
                         scalingMode,
+                        dockerUsername: dockerUsername ?? null,
                         envVars: {
                             create: envVars.map((v) => ({
                                 key: v.key,
@@ -171,6 +176,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                         memory,
                         cpu,
                         scalingMode,
+                        dockerUsername: dockerUsername ?? null,
                     },
                 });
 
@@ -212,7 +218,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 queueName: "deploy",
                 data: {
                     deploymentId: deployment.id,
-                    image: `jestico/${deployment.jobName}`
+                    image: `${registry}/${deployment.jobName}`
                 },
                 children: [
                     {
@@ -222,7 +228,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                             deploymentId: deployment.id,
                             appName: agentName,
                             gitContext,
-                            image: `jestico/${deployment.jobName}`,
+                            image: `${registry}/${deployment.jobName}`,
                             port,
                             cpu,
                             memory,
@@ -237,7 +243,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 success: true,
                 agentId: agent.id,
                 deploymentId: deployment.id,
-                destination: `jestico/${cleanName}:${deployment.id}`,
+                destination: `${registry}/${cleanName}:${deployment.id}`,
             });
         } catch (error) {
             fastify.log.error(error);
@@ -264,6 +270,9 @@ export async function userRoutes(fastify: FastifyInstance) {
             const cleanName = agent.agentName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
             const jobName = `kaniko-${cleanName}-${Date.now()}`;
 
+            const PLATFORM_REGISTRY = "jestico";
+            const registry = agent.dockerUsername ?? PLATFORM_REGISTRY;
+
             const newDeployment = await prisma.deployment.create({
                 data: {
                     agentId: agent.id,
@@ -283,7 +292,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 queueName: "deploy",
                 data: {
                     deploymentId: newDeployment.id,
-                    image: `jestico/${newDeployment.jobName}`
+                    image: `${registry}/${newDeployment.jobName}`
                 },
                 children: [
                     {
@@ -293,7 +302,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                             deploymentId: newDeployment.id,
                             appName: agent.agentName,
                             gitContext,
-                            image: `jestico/${newDeployment.jobName}`,
+                            image: `${registry}/${newDeployment.jobName}`,
                             port: agent.port,
                             cpu: agent.cpu,
                             memory: agent.memory,

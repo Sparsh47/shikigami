@@ -98,6 +98,7 @@ function ConfigureAgentContent() {
     const htmlUrlParam = searchParams.get("url") || "";
 
     const [user, setUser] = useState<GitHubUser | null>(null);
+    const [dockerUsername, setDockerUsername] = useState<string | null>(null);
 
     // Initial framework detection
     const initialFramework = React.useMemo(() => {
@@ -139,11 +140,19 @@ function ConfigureAgentContent() {
     useEffect(() => {
         async function loadUser() {
             try {
-                const res = await fetch("/api/auth/github/me");
-                if (res.ok) {
-                    const data = await res.json();
+                const [githubRes, dockerRes] = await Promise.all([
+                    fetch("/api/auth/github/me"),
+                    fetch("/api/auth/docker/me"),
+                ]);
+                if (githubRes.ok) {
+                    const data = await githubRes.json();
                     setUser(data.user);
                 }
+                if (dockerRes.ok) {
+                    const data = await dockerRes.json();
+                    setDockerUsername(data.user.username);
+                }
+                // If docker/me returns 401 it just means no PAT is configured — that's fine.
             } catch (err) {
                 console.error("Failed to load user:", err);
             }
@@ -220,6 +229,7 @@ function ConfigureAgentContent() {
             memory: memory,
             cpu: cpuValue,
             scalingMode: scalingMode,
+            dockerUsername: dockerUsername ?? null,
             envVars: envVars
                 .filter((v) => v.key.trim() !== "")
                 .map((v) => ({

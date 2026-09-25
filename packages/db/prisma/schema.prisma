@@ -35,6 +35,8 @@ model Agent {
   cpu         Float  @default(1.0)
   scalingMode String @default("serverless")
 
+  dockerUsername String? // null = push to platform default registry
+
   envVars   EnvVar[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -43,11 +43,15 @@ body {
 }
 
 /* Smooth theme transitions */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
 }
+
 /* But not transforms/opacity (would slow animations) */
-[class*="animate-"], [class*="transition-"] {
+[class*="animate-"],
+[class*="transition-"] {
     transition: unset;
 }
 
@@ -86,4 +90,3 @@ body,
 ::-webkit-scrollbar-corner {
     background: transparent;
 }
-
