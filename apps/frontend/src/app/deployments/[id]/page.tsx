@@ -26,6 +26,7 @@ import {
     Box,
     Layers,
     Zap,
+    Settings,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -406,6 +407,14 @@ export default function DeploymentDetailPage() {
                                 <RefreshCw className="h-3 w-3" />
                                 Redeploy
                             </button>
+                            <Link
+                                href={`/deployments/${id}/settings`}
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] px-3.5 py-2 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-elevated)] transition-all shadow-sm"
+                                title="Settings"
+                            >
+                                <Settings className="h-3 w-3" />
+                                Settings
+                            </Link>
                         </div>
                     </div>
                 </div>

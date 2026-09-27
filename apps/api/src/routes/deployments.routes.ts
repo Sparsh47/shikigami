@@ -337,7 +337,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         // 1. Subscribe to Redis high-level events
         const subClient = createRedisClient();
         await subClient.subscribe(`deployment-events:${id}`);
-        
+
         subClient.on("message", (channel, message) => {
             if (channel === `deployment-events:${id}`) {
                 const data = JSON.parse(message);
@@ -361,7 +361,7 @@ export async function userRoutes(fastify: FastifyInstance) {
             });
 
             let logStreamConnected = false;
-            
+
             const tryConnectLogs = async () => {
                 try {
                     await streamJobLogs(`kaniko-${id}`, sseStream);
@@ -392,7 +392,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                 });
             });
         } else {
-            // For READY or FAILED deployments, just wait until client closes
             await new Promise<void>((resolve) => {
                 request.raw.on("close", () => {
                     subClient.unsubscribe();
@@ -402,7 +401,34 @@ export async function userRoutes(fastify: FastifyInstance) {
             });
         }
     });
+
+    fastify.get("/:id/envs", async (request, reply) => {
+        const { id } = request.params as { id: string };
+        try {
+            const deployment = await prisma.deployment.findFirst({
+                where: { id },
+                include: {
+                    agent: {
+                        include: {
+                            envVars: true,
+                        }
+                    }
+                }
+            });
+
+            if (!deployment) {
+                return reply.status(404).send({ error: "Deployment not found" });
+            }
+
+            return reply.status(200).send({ envs: deployment.agent.envVars, agent: deployment.agent.agentName });
+        } catch (err) {
+            fastify.log.error(err);
+            return reply.status(500).send({
+                error: "Failed to fetch envs",
+                message: err instanceof Error ? err.message : "Internal Server Error",
+            });
+        }
+    })
 }
 
-// Semantic alias
 export const deploymentRoutes = userRoutes;

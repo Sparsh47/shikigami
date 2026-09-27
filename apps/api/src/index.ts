@@ -10,7 +10,7 @@ const fastify = Fastify({
 });
 
 await fastify.register(cors, {
-    origin: true, // Allow frontend requests
+    origin: true,
     credentials: true,
 });
 
