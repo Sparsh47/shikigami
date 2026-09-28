@@ -4,6 +4,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { prisma } from "@repo/db";
 import { userRoutes } from "./routes/deployments.routes.js";
+import { authPlugin } from "./plugins/auth.js";
 
 const fastify = Fastify({
     logger: true
@@ -13,6 +14,9 @@ await fastify.register(cors, {
     origin: true,
     credentials: true,
 });
+
+// All deployment routes require the internal secret + a verified GitHub userId
+await fastify.register(authPlugin);
 
 fastify.register(userRoutes, {
     prefix: "/api/deployments"

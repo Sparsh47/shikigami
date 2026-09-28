@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { proxyToFastify } from "@/lib/api-proxy";
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const response = await proxyToFastify(`/api/deployments/${id}/redeploy`, {
-            method: "POST",
+        const body = await request.json();
+
+        const response = await proxyToFastify(`/api/deployments/${id}/settings`, {
+            method: "PATCH",
+            body: JSON.stringify(body),
         });
 
         if (response.status === 401) {
@@ -13,7 +16,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
 
         if (!response.ok) {
-            return NextResponse.json({ error: "Failed to redeploy" }, { status: response.status });
+            const err = await response.json().catch(() => ({}));
+            return NextResponse.json(err, { status: response.status });
         }
 
         const data = await response.json();

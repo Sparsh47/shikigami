@@ -8,11 +8,8 @@ import { streamJobLogs } from "@repo/k8s";
 
 export async function userRoutes(fastify: FastifyInstance) {
     fastify.get("/", async (request, reply) => {
-        const { userId } = request.query as { userId?: string };
-
-        if (!userId) {
-            return reply.status(400).send({ error: "userId query param is required" });
-        }
+        // userId is injected by the auth plugin from the verified GitHub session
+        const userId = request.userId;
 
         try {
             const deployments = await prisma.deployment.findMany({
@@ -102,8 +99,10 @@ export async function userRoutes(fastify: FastifyInstance) {
                 });
             }
 
+            // userId comes from the verified GitHub session, not the request body
+            const userId = request.userId;
+
             const {
-                userId,
                 agentName,
                 framework,
                 repoFullName,

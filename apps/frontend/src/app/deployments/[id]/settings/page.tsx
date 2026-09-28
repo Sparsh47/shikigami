@@ -258,7 +258,7 @@ export default function DeploymentSettingsPage() {
         setSaveError(null);
 
         try {
-            const res = await fetch(`http://localhost:8080/api/deployments/${id}/settings`, {
+            const res = await fetch(`/api/deployments/${id}/settings`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -274,7 +274,7 @@ export default function DeploymentSettingsPage() {
                 throw new Error(err.message || err.error || "Failed to save settings");
             }
 
-            await fetch(`http://localhost:8080/api/deployments/${id}/redeploy`, { method: "POST" });
+            await fetch(`/api/deployments/${id}/redeploy`, { method: "POST" });
 
             originalRef.current = { agentName: agentName.trim(), envVars: structuredClone(envVars) };
             setSaveState("success");

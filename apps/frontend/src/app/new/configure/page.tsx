@@ -215,7 +215,6 @@ function ConfigureAgentContent() {
         const cpuValue = parseFloat(cpu.replace(/[^0-9.]/g, "")) || 1.0;
 
         const payload = {
-            userId: user ? String(user.id) : "guest-user",
             agentName: agentName.trim(),
             framework: selectedFramework.name,
             repoFullName: repoParam || agentName.trim(),
@@ -242,7 +241,7 @@ function ConfigureAgentContent() {
         try {
             setDeployStep("Triggering Kaniko container build…");
 
-            const res = await fetch("http://localhost:8080/api/deployments/create", {
+            const res = await fetch("/api/deployments/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

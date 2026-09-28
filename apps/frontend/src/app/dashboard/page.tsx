@@ -29,13 +29,16 @@ export default function Dashboard() {
     const [statusFilter, setStatusFilter] = useState<"all" | DeployStatus>("all");
     const [deployments, setDeployments] = useState<AgentDeployment[]>([]);
 
-    async function loadDeployments(userId: string) {
+    async function loadDeployments() {
         setDeploymentsLoading(true);
         setDeploymentsError(null);
         try {
-            const res = await fetch(
-                `http://localhost:8080/api/deployments?userId=${encodeURIComponent(userId)}`
-            );
+            // /api/deployments proxies to Fastify with the verified session — no userId in the URL
+            const res = await fetch("/api/deployments");
+            if (res.status === 401) {
+                setDeploymentsError("Session expired — please log in again.");
+                return;
+            }
             if (!res.ok) throw new Error(`API returned ${res.status}`);
             const data = await res.json();
             setDeployments(data.deployments ?? []);
@@ -54,7 +57,7 @@ export default function Dashboard() {
                 if (!response.ok) { setLoading(false); return; }
                 const data = await response.json();
                 setUser(data.user);
-                await loadDeployments(String(data.user.id));
+                await loadDeployments();
             } catch (error) {
                 console.error("Failed to load user:", error);
             } finally {

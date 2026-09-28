@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { proxyToFastify } from "@/lib/api-proxy";
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+// GET /api/deployments  →  lists all deployments for the authenticated user
+export async function GET() {
     try {
-        const { id } = await params;
-        const response = await proxyToFastify(`/api/deployments/${id}/redeploy`, {
-            method: "POST",
-        });
+        // No userId query param — Fastify reads it from the x-user-id header
+        const response = await proxyToFastify("/api/deployments/");
 
         if (response.status === 401) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         if (!response.ok) {
-            return NextResponse.json({ error: "Failed to redeploy" }, { status: response.status });
+            return NextResponse.json({ error: "Failed to fetch deployments" }, { status: response.status });
         }
 
         const data = await response.json();

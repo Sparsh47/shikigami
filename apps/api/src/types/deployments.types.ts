@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const createDeploymentSchema = z.object({
-    userId: z.string().min(1, "userId is required"),
     agentName: z.string().min(1, "agentName is required"),
     framework: z.string().min(1, "framework is required"),
     repoFullName: z.string().min(1, "repoFullName is required"),
