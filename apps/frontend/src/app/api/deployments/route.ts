@@ -1,10 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { proxyToFastify } from "@/lib/api-proxy";
 
-// GET /api/deployments  →  lists all deployments for the authenticated user
 export async function GET() {
     try {
-        // No userId query param — Fastify reads it from the x-user-id header
         const response = await proxyToFastify("/api/deployments/");
 
         if (response.status === 401) {

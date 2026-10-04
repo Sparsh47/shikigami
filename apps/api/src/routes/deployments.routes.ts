@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import * as stream from "stream";
-import { prisma } from "@repo/db";
+import { EnvVar, prisma } from "@repo/db";
 import { createDeploymentSchema } from "../types/deployments.types.js";
 import { flowProducer } from "@repo/queue";
 import { createRedisClient } from "@repo/redis";
@@ -8,10 +8,10 @@ import { streamJobLogs } from "@repo/k8s";
 
 export async function userRoutes(fastify: FastifyInstance) {
     fastify.get("/", async (request, reply) => {
-        // userId is injected by the auth plugin from the verified GitHub session
         const userId = request.userId;
 
         try {
+            console.log("Fetching deployments for user: ", userId);
             const deployments = await prisma.deployment.findMany({
                 where: { agent: { userId } },
                 orderBy: { createdAt: "desc" },
@@ -27,6 +27,8 @@ export async function userRoutes(fastify: FastifyInstance) {
                 },
             });
 
+            console.log("Found Deployments: ", deployments);
+
             const shaped = deployments.map((d) => ({
                 id: d.id,
                 name: d.agent.agentName,
@@ -41,10 +43,12 @@ export async function userRoutes(fastify: FastifyInstance) {
                 updatedAt: d.updatedAt.toISOString(),
             }));
 
+            console.log("Shaped Deployments: ", shaped);
+
             return reply.send({ deployments: shaped });
         } catch (error) {
             fastify.log.error(error);
-            return reply.status(500).send({ error: "Failed to fetch deployments" });
+            return reply.status(500).send({ error: "Failed to fetch deployments", message: error instanceof Error ? error.message : String(error) });
         }
     });
 
@@ -409,7 +413,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 include: {
                     agent: {
                         include: {
-                            envVars: true,
+                            envVars: true
                         }
                     }
                 }
@@ -419,11 +423,62 @@ export async function userRoutes(fastify: FastifyInstance) {
                 return reply.status(404).send({ error: "Deployment not found" });
             }
 
-            return reply.status(200).send({ envs: deployment.agent.envVars, agent: deployment.agent.agentName });
+            const envs = deployment.agent.envVars.map((env) => {
+                const { key, isSecret, value, agentId, id } = env;
+                const newEnv = {
+                    id,
+                    agentId,
+                    isSecret,
+                    key,
+                    value: isSecret ? "********************" : value
+                }
+
+                return newEnv
+            })
+
+            return reply.status(200).send({ envs: envs, agent: deployment.agent.agentName });
         } catch (err) {
             fastify.log.error(err);
             return reply.status(500).send({
                 error: "Failed to fetch envs",
+                message: err instanceof Error ? err.message : "Internal Server Error",
+            });
+        }
+    })
+
+    fastify.patch("/:id/envs/update", async (request, reply) => {
+        try {
+            const { id } = request.params as { id: string };
+            const { envs } = request.body as { envs: EnvVar[] };
+
+            const agent = await prisma.agent.findUnique({
+                where: { id: Number(id) },
+                include: {
+                    envVars: true
+                }
+            });
+
+            if (!agent) {
+                return reply.status(404).send({ error: "Agent not found" });
+            }
+
+            const existingEnvs = agent.envVars;
+            const updatedEnvs = [...existingEnvs, ...envs];
+
+            await prisma.agent.update({
+                where: { id: agent.id },
+                data: {
+                    envVars: {
+                        create: envs
+                    }
+                }
+            })
+
+            return reply.status(200).send({ success: true, agentId: id });
+        } catch (err) {
+            fastify.log.error(err);
+            return reply.status(500).send({
+                error: "Failed to update envs",
                 message: err instanceof Error ? err.message : "Internal Server Error",
             });
         }

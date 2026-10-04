@@ -33,7 +33,6 @@ export default function Dashboard() {
         setDeploymentsLoading(true);
         setDeploymentsError(null);
         try {
-            // /api/deployments proxies to Fastify with the verified session — no userId in the URL
             const res = await fetch("/api/deployments");
             if (res.status === 401) {
                 setDeploymentsError("Session expired — please log in again.");
