@@ -197,8 +197,8 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
             serviceManifest.spec!.clusterIP = existing.spec.clusterIP;
         }
         // Preserve nodePort if it was already assigned by K8s
-        if (existing.spec && existing.spec.ports?.[0]?.nodePort) {
-            serviceManifest.spec!.ports![0].nodePort = existing.spec.ports[0].nodePort;
+        if (existing.spec?.ports?.[0]?.nodePort && serviceManifest.spec?.ports?.[0]) {
+            serviceManifest.spec.ports[0].nodePort = existing.spec.ports[0].nodePort;
         }
         await coreV1Api.replaceNamespacedService({
             name: serviceName,

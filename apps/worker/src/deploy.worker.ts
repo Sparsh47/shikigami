@@ -2,21 +2,12 @@ import { Worker } from "bullmq";
 import { redisConnection, createRedisClient } from "@repo/redis";
 import { deployApp } from "@repo/k8s";
 import { prisma } from "@repo/db";
-
-const pubClient = createRedisClient();
-
-function publishEvent(deploymentId: string, status: string, message: string) {
-    pubClient.publish(`deployment-events:${deploymentId}`, JSON.stringify({
-        status,
-        message,
-        timestamp: new Date().toISOString()
-    })).catch(console.error);
-}
+import { publishEvent } from "./lib/utils.js";
 
 export const deployWorker = new Worker("deploy", async (job) => {
     const { deploymentId, image } = job.data;
 
-    publishEvent(deploymentId, "DEPLOY_STARTED", "Fetching configuration for deployment...");
+    await publishEvent(deploymentId, "DEPLOY_STARTED", "Fetching configuration for deployment...", "deployment");
 
     // Fetch the deployment and associated agent config
     const deploymentRecord = await prisma.deployment.findUnique({
@@ -29,14 +20,14 @@ export const deployWorker = new Worker("deploy", async (job) => {
     });
 
     if (!deploymentRecord || !deploymentRecord.agent) {
-        publishEvent(deploymentId, "DEPLOY_FAILED", "Agent configuration not found");
+        await publishEvent(deploymentId, "DEPLOY_FAILED", "Agent configuration not found", "deployment");
         throw new Error(`Agent configuration not found for deploymentId: ${deploymentId}`);
     }
 
     const { agent } = deploymentRecord;
     const appName = agent.agentName.toLowerCase().replace(/[^a-z0-9-]/g, "-");
 
-    publishEvent(deploymentId, "DEPLOY_PROGRESS", "Applying Kubernetes manifests...");
+    await publishEvent(deploymentId, "DEPLOY_PROGRESS", "Applying Kubernetes manifests...", "deployment");
 
     // Deploy to Kubernetes
     const appUrl = await deployApp({
@@ -52,14 +43,14 @@ export const deployWorker = new Worker("deploy", async (job) => {
     // Update database status to READY
     await prisma.deployment.update({
         where: { id: deploymentId },
-        data: { 
-            status: "READY", 
-            url: appUrl, 
-            updatedAt: new Date() 
+        data: {
+            status: "READY",
+            url: appUrl,
+            updatedAt: new Date()
         },
     });
 
-    publishEvent(deploymentId, "DEPLOY_SUCCESS", `Application successfully deployed and available at ${appUrl}`);
+    await publishEvent(deploymentId, "DEPLOY_SUCCESS", `Application successfully deployed and available at ${appUrl}`, "deployment");
 
     return { success: true, url: appUrl, deploymentId };
 }, {

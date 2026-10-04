@@ -6,6 +6,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         const { id } = await params;
         const response = await proxyToFastify(`/api/deployments/${id}/redeploy`, {
             method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{}",
         });
 
         if (response.status === 401) {
@@ -13,7 +15,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
 
         if (!response.ok) {
-            return NextResponse.json({ error: "Failed to redeploy" }, { status: response.status });
+            const errData = await response.json().catch(() => ({}));
+            return NextResponse.json({ error: errData.error || "Failed to redeploy" }, { status: response.status });
         }
 
         const data = await response.json();

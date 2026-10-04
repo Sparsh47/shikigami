@@ -44,14 +44,19 @@ export async function proxyToFastify(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const headers: Record<string, string> = {
+        "x-internal-secret": INTERNAL_SECRET,
+        "x-user-id": userId,
+        ...((init?.headers as Record<string, string>) ?? {}),
+    };
+
+    if (init?.body && !headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json";
+    }
+
     return await fetch(`${FASTIFY_BASE}${path}`, {
         ...init,
         cache: "no-store",
-        headers: {
-            "Content-Type": "application/json",
-            ...(init?.headers ?? {}),
-            "x-internal-secret": INTERNAL_SECRET,
-            "x-user-id": userId,
-        },
+        headers,
     });
 }

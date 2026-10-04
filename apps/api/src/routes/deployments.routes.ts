@@ -9,11 +9,19 @@ import { streamJobLogs } from "@repo/k8s";
 export async function userRoutes(fastify: FastifyInstance) {
     fastify.get("/", async (request, reply) => {
         const userId = request.userId;
+        const { repo, agentName } = (request.query as { repo?: string; agentName?: string }) ?? {};
 
         try {
-            console.log("Fetching deployments for user: ", userId);
+            const whereClause: any = { agent: { userId } };
+            if (repo) {
+                whereClause.agent.repoFullName = repo;
+            }
+            if (agentName) {
+                whereClause.agent.agentName = agentName;
+            }
+
             const deployments = await prisma.deployment.findMany({
-                where: { agent: { userId } },
+                where: whereClause,
                 orderBy: { createdAt: "desc" },
                 include: {
                     agent: {
@@ -26,8 +34,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                     },
                 },
             });
-
-            console.log("Found Deployments: ", deployments);
 
             const shaped = deployments.map((d) => ({
                 id: d.id,
@@ -42,8 +48,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                 createdAt: d.createdAt.toISOString(),
                 updatedAt: d.updatedAt.toISOString(),
             }));
-
-            console.log("Shaped Deployments: ", shaped);
 
             return reply.send({ deployments: shaped });
         } catch (error) {
@@ -325,6 +329,24 @@ export async function userRoutes(fastify: FastifyInstance) {
             return reply.status(500).send({
                 error: "Failed to redeploy",
                 message: error instanceof Error ? error.message : "Internal Server Error",
+            });
+        }
+    });
+
+    // Must be registered BEFORE /:id/logs so Fastify doesn't shadow it
+    fastify.get("/:id/logs/history", async (request, reply) => {
+        try {
+            const { id } = request.params as { id: string };
+            const redis = createRedisClient();
+            const raw = await redis.lrange(`deployment-logs:${id}`, 0, -1);
+            await redis.quit();
+            const events = raw.map((r) => JSON.parse(r));
+            return reply.send({ events });
+        } catch (err) {
+            fastify.log.error(err);
+            return reply.status(500).send({
+                error: "Failed to fetch logs history",
+                message: err instanceof Error ? err.message : "Internal Server Error"
             });
         }
     });

@@ -1,9 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { proxyToFastify } from "@/lib/api-proxy";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const response = await proxyToFastify("/api/deployments/");
+        const repo = request.nextUrl.searchParams.get("repo");
+        const agentName = request.nextUrl.searchParams.get("agentName");
+        const params = new URLSearchParams();
+        if (repo) params.set("repo", repo);
+        if (agentName) params.set("agentName", agentName);
+        const query = params.toString() ? `?${params.toString()}` : "";
+        const response = await proxyToFastify(`/api/deployments${query}`);
 
         if (response.status === 401) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -18,7 +18,15 @@ import {
     Terminal,
     Tag,
     Rocket,
+    GitBranch,
+    GitCommit,
+    ExternalLink,
+    History,
+    CircleDashed,
+    XCircle,
+    Settings,
 } from "lucide-react";
+import { AgentDeployment } from "@/types/repo";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,12 +43,55 @@ interface AgentSettings {
 }
 
 type SaveState = "idle" | "saving" | "success" | "error";
-type ActiveSection = "general" | "env-vars" | "danger";
+type ActiveSection = "general" | "env-vars" | "deployments" | "danger";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function uid() {
     return Math.random().toString(36).slice(2, 9);
+}
+
+function relativeTime(iso: string) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60_000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function statusConfig(status: "ready" | "building" | "failed" | "queued") {
+    switch (status) {
+        case "ready":
+            return {
+                label: "Ready",
+                dot: "bg-emerald-400",
+                badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />,
+            };
+        case "building":
+            return {
+                label: "Building",
+                dot: "bg-amber-400 animate-pulse",
+                badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                icon: <Loader2 className="h-3.5 w-3.5 text-amber-400 animate-spin" />,
+            };
+        case "failed":
+            return {
+                label: "Failed",
+                dot: "bg-red-400",
+                badge: "bg-red-500/10 text-red-400 border-red-500/20",
+                icon: <XCircle className="h-3.5 w-3.5 text-red-400" />,
+            };
+        case "queued":
+            return {
+                label: "Queued",
+                dot: "bg-[var(--text-muted)]",
+                badge: "bg-[var(--border)] text-[var(--text-muted)] border-[#3e3730]",
+                icon: <CircleDashed className="h-3.5 w-3.5 text-[var(--text-muted)]" />,
+            };
+    }
 }
 
 // ─── Env Var Row ──────────────────────────────────────────────────────────────
@@ -152,6 +203,10 @@ export default function DeploymentSettingsPage() {
     const [notFound, setNotFound] = useState(false);
     const [activeSection, setActiveSection] = useState<ActiveSection>("general");
 
+    const [deployment, setDeployment] = useState<AgentDeployment | null>(null);
+    const [allDeployments, setAllDeployments] = useState<AgentDeployment[]>([]);
+    const [deploymentsLoading, setDeploymentsLoading] = useState(false);
+
     const [agentName, setAgentName] = useState("");
     const [envVars, setEnvVars] = useState<EnvVar[]>([]);
     const [visibleIds, setVisibleIds] = useState<Record<string, boolean>>({});
@@ -170,6 +225,52 @@ export default function DeploymentSettingsPage() {
             .then((d) => d && setUser(d.user))
             .catch(() => { });
     }, []);
+
+    const handleSectionChange = (section: ActiveSection) => {
+        setActiveSection(section);
+        if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.set("section", section);
+            window.history.replaceState(null, "", url.toString());
+        }
+    };
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const section = params.get("section");
+            if (section === "deployments" || section === "env-vars" || section === "danger" || section === "general") {
+                setActiveSection(section);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        async function loadDeploymentInfo() {
+            try {
+                const res = await fetch(`/api/deployments/${id}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.deployment) {
+                    setDeployment(data.deployment);
+                    setDeploymentsLoading(true);
+                    const repoParam = data.deployment.repo ? `repo=${encodeURIComponent(data.deployment.repo)}` : "";
+                    const agentParam = data.deployment.name ? `agentName=${encodeURIComponent(data.deployment.name)}` : "";
+                    const query = [repoParam, agentParam].filter(Boolean).join("&");
+                    const allRes = await fetch(`/api/deployments?${query}`);
+                    if (allRes.ok) {
+                        const allData = await allRes.json();
+                        setAllDeployments(allData.deployments ?? []);
+                    }
+                }
+            } catch (e) {
+                console.warn("Failed to load repo deployments in settings:", e);
+            } finally {
+                setDeploymentsLoading(false);
+            }
+        }
+        loadDeploymentInfo();
+    }, [id]);
 
     // ── Load deployment settings ──────────────────────────────────────────────
     useEffect(() => {
@@ -497,6 +598,113 @@ export default function DeploymentSettingsPage() {
         </div>
     );
 
+    const deploymentsSection = (
+        <div className="space-y-4">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
+                <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-sm font-semibold text-[var(--text-heading)]">Deployments</h2>
+                        <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                            All deployments created for {deployment?.repo ? <span className="font-mono text-[var(--text-heading)]">{deployment.repo}</span> : "this repository"}.
+                        </p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-0.5 text-xs font-mono text-[var(--text-muted)]">
+                        {allDeployments.length} deployment{allDeployments.length !== 1 ? "s" : ""}
+                    </span>
+                </div>
+
+                <div className="divide-y divide-[var(--border)]">
+                    {deploymentsLoading ? (
+                        <div className="flex items-center justify-center py-12 text-[var(--text-muted)]">
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--accent)]" />
+                        </div>
+                    ) : allDeployments.length === 0 ? (
+                        <div className="py-12 text-center text-xs text-[var(--text-muted)]">
+                            No deployments found for this repository.
+                        </div>
+                    ) : (
+                        allDeployments.map((d) => {
+                            const sc = statusConfig(d.status);
+                            const isCurrent = d.id === id;
+                            return (
+                                <div
+                                    key={d.id}
+                                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-white/[0.015] ${
+                                        isCurrent ? "bg-[var(--accent)]/[0.03]" : ""
+                                    }`}
+                                >
+                                    {/* Left: Status, name, commit, branch */}
+                                    <div className="space-y-1.5 min-w-0">
+                                        <div className="flex items-center gap-2.5 flex-wrap">
+                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium border ${sc.badge}`}>
+                                                <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
+                                                {sc.label}
+                                            </span>
+                                            <Link
+                                                href={`/deployments/${d.id}`}
+                                                className="font-mono text-xs font-semibold text-[var(--text-heading)] hover:text-[var(--accent)] hover:underline truncate"
+                                            >
+                                                {d.id}
+                                            </Link>
+                                            {isCurrent && (
+                                                <span className="rounded bg-[var(--accent)]/15 border border-[var(--accent)]/30 px-1.5 py-0.2 text-[9px] font-semibold text-[var(--accent)] uppercase tracking-wider">
+                                                    Current
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center gap-3 text-xs text-[var(--text-muted)] flex-wrap">
+                                            <span className="inline-flex items-center gap-1 font-mono text-[11px]">
+                                                <GitBranch className="h-3 w-3" />
+                                                {d.branch}
+                                            </span>
+                                            <span>•</span>
+                                            <span className="inline-flex items-center gap-1 font-mono text-[11px]">
+                                                <GitCommit className="h-3 w-3" />
+                                                {d.commitSha && d.commitSha !== "latest" ? d.commitSha.slice(0, 7) : "latest"}
+                                            </span>
+                                            {d.commitMessage && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span className="truncate max-w-[220px] text-[var(--text-body)]">
+                                                        {d.commitMessage}
+                                                    </span>
+                                                </>
+                                            )}
+                                            <span>•</span>
+                                            <span>{relativeTime(d.createdAt)}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Actions */}
+                                    <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        {d.url && (
+                                            <a
+                                                href={d.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:border-[var(--accent)]/40 transition-colors"
+                                            >
+                                                Visit
+                                                <ExternalLink className="h-3 w-3" />
+                                            </a>
+                                        )}
+                                        <Link
+                                            href={`/deployments/${d.id}`}
+                                            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-elevated)] transition-colors"
+                                        >
+                                            View Logs
+                                        </Link>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-body)] flex flex-col">
             <Navbar user={user ?? undefined} />
@@ -504,16 +712,51 @@ export default function DeploymentSettingsPage() {
             <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
 
                 {/* Breadcrumb */}
-                <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-6">
+                <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] mb-4">
                     <Link href="/dashboard" className="hover:text-[var(--text-heading)] transition-colors">
                         Deployments
                     </Link>
                     <span className="opacity-30">/</span>
                     <Link href={`/deployments/${id}`} className="hover:text-[var(--text-heading)] transition-colors font-mono">
-                        {id.slice(0, 8)}…
+                        {deployment?.name || `${id.slice(0, 8)}…`}
                     </Link>
                     <span className="opacity-30">/</span>
                     <span className="text-[var(--text-body)]">Settings</span>
+                </div>
+
+                {/* Vercel-style sub-navigation tabs */}
+                <div className="flex items-center gap-6 border-b border-[var(--border)] mb-8 text-xs">
+                    <Link
+                        href={`/deployments/${id}`}
+                        className="flex items-center gap-1.5 pb-2.5 font-medium border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors"
+                    >
+                        <Terminal className="h-3.5 w-3.5" />
+                        Overview & Logs
+                    </Link>
+                    <button
+                        type="button"
+                        onClick={() => handleSectionChange("deployments")}
+                        className={`flex items-center gap-1.5 pb-2.5 font-medium border-b-2 transition-colors cursor-pointer ${
+                            activeSection === "deployments"
+                                ? "border-[var(--accent)] text-[var(--text-heading)]"
+                                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+                        }`}
+                    >
+                        <History className="h-3.5 w-3.5" />
+                        Deployments
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleSectionChange(activeSection === "deployments" ? "general" : activeSection)}
+                        className={`flex items-center gap-1.5 pb-2.5 font-medium border-b-2 transition-colors cursor-pointer ${
+                            activeSection !== "deployments"
+                                ? "border-[var(--accent)] text-[var(--text-heading)]"
+                                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+                        }`}
+                    >
+                        <Settings className="h-3.5 w-3.5" />
+                        Settings
+                    </button>
                 </div>
 
                 {/* Two-column layout */}
@@ -525,9 +768,10 @@ export default function DeploymentSettingsPage() {
                             Settings
                         </p>
                         <nav className="space-y-0.5">
-                            <NavItem icon={<Tag className="h-3.5 w-3.5" />} label="General" active={activeSection === "general"} onClick={() => setActiveSection("general")} />
-                            <NavItem icon={<Terminal className="h-3.5 w-3.5" />} label="Environment" active={activeSection === "env-vars"} onClick={() => setActiveSection("env-vars")} />
-                            <NavItem icon={<AlertTriangle className="h-3.5 w-3.5" />} label="Danger Zone" active={activeSection === "danger"} onClick={() => setActiveSection("danger")} />
+                            <NavItem icon={<Tag className="h-3.5 w-3.5" />} label="General" active={activeSection === "general"} onClick={() => handleSectionChange("general")} />
+                            <NavItem icon={<Terminal className="h-3.5 w-3.5" />} label="Environment" active={activeSection === "env-vars"} onClick={() => handleSectionChange("env-vars")} />
+                            <NavItem icon={<History className="h-3.5 w-3.5" />} label="Deployments" active={activeSection === "deployments"} onClick={() => handleSectionChange("deployments")} />
+                            <NavItem icon={<AlertTriangle className="h-3.5 w-3.5" />} label="Danger Zone" active={activeSection === "danger"} onClick={() => handleSectionChange("danger")} />
                         </nav>
                     </aside>
 
@@ -540,13 +784,14 @@ export default function DeploymentSettingsPage() {
                                 [
                                     { key: "general", label: "General", icon: <Tag className="h-3 w-3" /> },
                                     { key: "env-vars", label: "Env Vars", icon: <Terminal className="h-3 w-3" /> },
+                                    { key: "deployments", label: "Deployments", icon: <History className="h-3 w-3" /> },
                                     { key: "danger", label: "Danger", icon: <AlertTriangle className="h-3 w-3" /> },
                                 ] as const
                             ).map((tab) => (
                                 <button
                                     key={tab.key}
                                     type="button"
-                                    onClick={() => setActiveSection(tab.key)}
+                                    onClick={() => handleSectionChange(tab.key)}
                                     className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors cursor-pointer ${activeSection === tab.key
                                             ? "bg-[var(--accent)]/10 text-[var(--accent)]"
                                             : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
@@ -563,17 +808,20 @@ export default function DeploymentSettingsPage() {
                             <h1 className="text-base font-semibold text-[var(--text-heading)]">
                                 {activeSection === "general" && "General"}
                                 {activeSection === "env-vars" && "Environment Variables"}
+                                {activeSection === "deployments" && "Deployments"}
                                 {activeSection === "danger" && "Danger Zone"}
                             </h1>
                             <p className="mt-0.5 text-xs text-[var(--text-muted)]">
                                 {activeSection === "general" && "Basic configuration for this deployment."}
                                 {activeSection === "env-vars" && "Manage runtime secrets and configuration values."}
+                                {activeSection === "deployments" && "All deployment runs and logs for this repository."}
                                 {activeSection === "danger" && "Destructive actions that cannot be undone."}
                             </p>
                         </div>
 
                         {activeSection === "general" && generalSection}
                         {activeSection === "env-vars" && envVarsSection}
+                        {activeSection === "deployments" && deploymentsSection}
                         {activeSection === "danger" && dangerSection}
                     </div>
                 </div>

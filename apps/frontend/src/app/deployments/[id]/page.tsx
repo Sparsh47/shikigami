@@ -21,6 +21,7 @@ import {
     Check,
     AlertTriangle,
     Layers,
+    History,
     Settings,
 } from "lucide-react";
 
@@ -141,6 +142,8 @@ export default function DeploymentDetailPage() {
     const logIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const logIndexRef = useRef(0);
 
+    const [redeploying, setRedeploying] = useState(false);
+
     useEffect(() => {
         fetch("/api/auth/github/me")
             .then((r) => r.ok ? r.json() : null)
@@ -190,18 +193,31 @@ export default function DeploymentDetailPage() {
         };
     }, [id]);
 
+
     const handleRedeploy = async () => {
-        if (!deployment) return;
+        if (!deployment || redeploying) return;
+        setRedeploying(true);
         try {
             const res = await fetch(`/api/deployments/${deployment.id}/redeploy`, {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({}),
             });
             if (res.ok) {
                 const data = await res.json();
-                window.location.href = `/deployments/${data.deploymentId}`;
+                if (data.deploymentId) {
+                    window.location.href = `/deployments/${data.deploymentId}`;
+                    return;
+                }
+            } else {
+                const err = await res.json().catch(() => ({}));
+                console.error("Failed to redeploy", err);
+                alert(err.error || "Failed to trigger redeployment");
             }
         } catch (e) {
             console.error("Failed to redeploy", e);
+        } finally {
+            setRedeploying(false);
         }
     };
 
@@ -210,7 +226,36 @@ export default function DeploymentDetailPage() {
     useEffect(() => {
         if (!deployment) return;
 
+        // Fetch logs history from authenticated Next.js proxy route
+        fetch(`/api/deployments/${deployment.id}/logs/history`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+                if (!data?.events) return;
+                const historical: LogLine[] = data.events.map((e: any) => ({
+                    ts: e.timestamp || new Date().toISOString(),
+                    level: e.status?.includes("FAILED")
+                        ? "error"
+                        : e.status?.includes("POLLING")
+                        ? "debug"
+                        : "info",
+                    msg: `[${e.status}] ${e.message}`,
+                }));
+                setLogs((prev) => {
+                    if (prev.length === 0) return historical;
+                    const existingKeys = new Set(prev.map((l) => `${l.ts}-${l.msg}`));
+                    const uniqueHistoric = historical.filter(
+                        (l) => !existingKeys.has(`${l.ts}-${l.msg}`)
+                    );
+                    return [...uniqueHistoric, ...prev];
+                });
+            })
+            .catch((err) => console.warn("Could not fetch log history:", err));
+
         if (deployment.status === "ready" || deployment.status === "failed") {
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
+            }
             setLogsRunning(false);
             return;
         }
@@ -218,7 +263,8 @@ export default function DeploymentDetailPage() {
         if (eventSourceRef.current) return;
 
         setLogsRunning(true);
-        const sse = new EventSource(`http://localhost:8080/api/deployments/${deployment.id}/logs`);
+        // Connect to authenticated Next.js proxy route for live SSE logs
+        const sse = new EventSource(`/api/deployments/${deployment.id}/logs`);
         eventSourceRef.current = sse;
 
         sse.onmessage = (event) => {
@@ -231,8 +277,8 @@ export default function DeploymentDetailPage() {
                         {
                             ts: data.timestamp || new Date().toISOString(),
                             level: data.status.includes("FAILED") ? "error" : data.status.includes("POLLING") ? "debug" : "info",
-                            msg: `[EVENT] ${data.message}`
-                        }
+                            msg: `[EVENT] ${data.message}`,
+                        },
                     ]);
                 } else if (data.type === "log" || data.type === "syslog") {
                     setLogs((prev) => [
@@ -240,8 +286,8 @@ export default function DeploymentDetailPage() {
                         {
                             ts: new Date().toISOString(),
                             level: "info",
-                            msg: data.message
-                        }
+                            msg: data.message,
+                        },
                     ]);
                 }
             } catch (e) {
@@ -336,7 +382,7 @@ export default function DeploymentDetailPage() {
                 </div>
 
                 {/* Page header */}
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                     <div>
                         <div className="flex items-center gap-2.5 flex-wrap">
                             <h1 className="text-base font-semibold text-[var(--text-heading)]">{deployment.name}</h1>
@@ -349,30 +395,48 @@ export default function DeploymentDetailPage() {
                     </div>
 
                     <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-                        <a
-                            href={deployment.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
-                        >
-                            <ExternalLink className="h-3 w-3" />
-                            Visit
-                        </a>
+                        {deployment.url && (
+                            <a
+                                href={deployment.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-medium text-[var(--text-body)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
+                            >
+                                <ExternalLink className="h-3 w-3" />
+                                Visit
+                            </a>
+                        )}
                         <button
                             onClick={handleRedeploy}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--accent)]/30 bg-[var(--accent)]/8 px-3 py-1.5 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)] hover:text-zinc-950 hover:border-[var(--accent)] transition-colors cursor-pointer"
+                            disabled={redeploying}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--accent)]/30 bg-[var(--accent)]/8 px-3 py-1.5 text-xs font-medium text-[var(--accent)] hover:bg-[var(--accent)] hover:text-zinc-950 hover:border-[var(--accent)] transition-colors cursor-pointer disabled:opacity-50"
                         >
-                            <RefreshCw className="h-3 w-3" />
-                            Redeploy
+                            <RefreshCw className={`h-3 w-3 ${redeploying ? "animate-spin" : ""}`} />
+                            {redeploying ? "Redeploying…" : "Redeploy"}
                         </button>
-                        <Link
-                            href={`/deployments/${id}/settings`}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-[var(--bg-elevated)] transition-colors"
-                        >
-                            <Settings className="h-3 w-3" />
-                            Settings
-                        </Link>
                     </div>
+                </div>
+
+                {/* Vercel-style sub-navigation tabs */}
+                <div className="flex items-center gap-6 border-b border-[var(--border)] mb-8 text-xs">
+                    <span className="flex items-center gap-1.5 pb-2.5 font-medium border-b-2 border-[var(--accent)] text-[var(--text-heading)]">
+                        <Terminal className="h-3.5 w-3.5 text-[var(--accent)]" />
+                        Overview & Logs
+                    </span>
+                    <Link
+                        href={`/deployments/${id}/settings?section=deployments`}
+                        className="flex items-center gap-1.5 pb-2.5 font-medium border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors"
+                    >
+                        <History className="h-3.5 w-3.5" />
+                        Deployments
+                    </Link>
+                    <Link
+                        href={`/deployments/${id}/settings`}
+                        className="flex items-center gap-1.5 pb-2.5 font-medium border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)] transition-colors"
+                    >
+                        <Settings className="h-3.5 w-3.5" />
+                        Settings
+                    </Link>
                 </div>
 
                 {/* Main two-column layout — mirrors settings page */}
@@ -412,6 +476,16 @@ export default function DeploymentDetailPage() {
                                 <InfoRow label="Commit" value={deployment.commitSha ? deployment.commitSha.slice(0, 7) : "—"} mono />
                                 <InfoRow label="Framework" value={deployment.framework} />
                                 <InfoRow label="Deployed" value={relativeTime(deployment.createdAt)} />
+                            </div>
+                            <div className="border-t border-[var(--border)]/60 px-4 py-2.5 bg-[var(--bg-base)]/40 flex items-center justify-between">
+                                <span className="text-[11px] text-[var(--text-muted)]">Deployments</span>
+                                <Link
+                                    href={`/deployments/${id}/settings?section=deployments`}
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--accent)] hover:underline"
+                                >
+                                    <span>View history</span>
+                                    <span className="text-[10px]">→</span>
+                                </Link>
                             </div>
                         </div>
 
@@ -520,6 +594,14 @@ export default function DeploymentDetailPage() {
                                     <InfoRow label="Branch" value={deployment.branch} />
                                     <InfoRow label="Framework" value={deployment.framework} />
                                     <InfoRow label="Deployed" value={relativeTime(deployment.createdAt)} />
+                                </div>
+                                <div className="border-t border-[var(--border)]/60 px-4 py-2 bg-[var(--bg-base)]/40">
+                                    <Link
+                                        href={`/deployments/${id}/settings?section=deployments`}
+                                        className="inline-flex items-center gap-1 text-[10px] font-medium text-[var(--accent)] hover:underline"
+                                    >
+                                        <span>Deployments →</span>
+                                    </Link>
                                 </div>
                             </div>
                             <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden">
