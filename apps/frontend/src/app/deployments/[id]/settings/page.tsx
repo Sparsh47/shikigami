@@ -217,6 +217,8 @@ export default function DeploymentSettingsPage() {
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
+    const [deleteState, setDeleteState] = useState<"idle" | "deleting" | "error">("idle");
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     // ── Load user ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -606,7 +608,11 @@ export default function DeploymentSettingsPage() {
                 </div>
                 <button
                     type="button"
-                    onClick={() => setShowDeleteModal(true)}
+                    onClick={() => {
+                        setDeleteState("idle");
+                        setDeleteError(null);
+                        setShowDeleteModal(true);
+                    }}
                     className="shrink-0 inline-flex items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/5 px-4 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/15 hover:border-rose-500/50 transition-colors cursor-pointer"
                 >
                     Delete deployment
@@ -881,17 +887,37 @@ export default function DeploymentSettingsPage() {
                             </button>
                             <button
                                 type="button"
-                                disabled={deleteConfirmText !== "delete"}
-                                onClick={() => {
-                                    // TODO: DELETE /api/deployments/:id → router.push("/dashboard")
-                                    setShowDeleteModal(false);
-                                    setDeleteConfirmText("");
+                                disabled={deleteConfirmText !== "delete" || deleteState === "deleting"}
+                                onClick={async () => {
+                                    setDeleteState("deleting");
+                                    setDeleteError(null);
+
+                                    try {
+                                        const response = await fetch(`/api/deployments/${id}/delete`, {
+                                            method: "DELETE",
+                                        });
+
+                                        if (!response.ok) {
+                                            const error = await response.json().catch(() => ({}));
+                                            throw new Error(error.message || error.error || "Failed to delete deployment");
+                                        }
+
+                                        setShowDeleteModal(false);
+                                        setDeleteConfirmText("");
+                                        router.push("/dashboard");
+                                    } catch (error) {
+                                        setDeleteState("error");
+                                        setDeleteError(error instanceof Error ? error.message : "Failed to delete deployment");
+                                    }
                                 }}
                                 className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                             >
-                                Delete deployment
+                                {deleteState === "deleting" ? "Deleting…" : "Delete deployment"}
                             </button>
                         </div>
+                        {deleteError && (
+                            <p className="px-6 pb-4 text-xs text-rose-400">{deleteError}</p>
+                        )}
                     </div>
                 </div>
             )}

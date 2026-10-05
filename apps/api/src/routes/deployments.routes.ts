@@ -535,6 +535,34 @@ export async function userRoutes(fastify: FastifyInstance) {
             });
         }
     })
+
+    fastify.delete("/:id/delete", async (request, reply) => {
+        try {
+            const { id } = request.body as { id: string };
+
+            const deployment = await prisma.deployment.findUnique({
+                where: { id }
+            });
+
+            if (!deployment) {
+                return reply.status(404).send({ error: "Deployment not found" });
+            }
+
+            await prisma.agent.delete({
+                where: {
+                    id: deployment.agentId
+                }
+            });
+
+            return reply.status(200).send({ success: true, message: "Deployment deleted successfully" });
+        } catch (err) {
+            fastify.log.error(err);
+            return reply.status(500).send({
+                error: "Failed to delete deployment",
+                message: err instanceof Error ? err.message : "Internal Server Error",
+            });
+        }
+    })
 }
 
 export const deploymentRoutes = userRoutes;

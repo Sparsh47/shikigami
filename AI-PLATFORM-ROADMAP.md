@@ -31,21 +31,21 @@ Security-related issues are intentionally excluded from this document.
 
 ## Highest-priority implementation gaps
 
-| Priority | Area | Missing functionality |
-|---|---|---|
-| P0 | Deployment lifecycle | The UI calls `PATCH /api/deployments/:id/settings`, but the Fastify API has no corresponding settings route. Saving settings will fail. |
-| P0 | Environment variables | The UI exposes environment editing, but the backend route is `PATCH /:id/envs/update`; the Next.js proxy only implements `GET`. The update flow is incomplete. |
-| P0 | Dockerfile support | The Kaniko manifest always uses `Dockerfile`. `rootDir` and `pathOfDockerfile` exist partially but are not passed into the build job. |
-| P0 | Deployment readiness | Status becomes `READY` immediately after Kubernetes resources are submitted. It does not wait for the pod to become ready or expose a readiness failure. |
-| P0 | Runtime failures | There is no runtime status reconciliation after deployment. A pod can crash or become unavailable while the database continues to say `READY`. |
-| P0 | Deletion | The settings UI contains a delete flow, but the API has no delete endpoint. |
-| P1 | Git integration | There are no GitHub webhooks, push-triggered deployments, commit status updates, or automatic redeployments. |
-| P1 | Deployment history | Deployments are stored, but there is no clear concept of production deployment, rollback, promotion, or active version. |
-| P1 | Scaling | `scalingMode` is persisted but ignored. Kubernetes always creates one replica, regardless of the selected mode. |
-| P1 | Domains | URLs are hardcoded to `localtest.me` and a fixed NodePort. Custom domains, TLS, DNS, and production ingress are not implemented. |
-| P1 | Logs | Redis stores deployment events temporarily, but there is no durable, searchable, phase-aware log store. |
-| P2 | Operations | No queue dashboard, deployment cancellation, retry controls, stuck-job recovery, cleanup reconciliation, or resource usage history. |
-| P2 | Team/product layer | No organizations, projects, collaborators, roles, billing plans, usage limits, or API keys. |
+| Priority | Area | Missing functionality | Done |
+|---|---|---|---|
+| P0 | Deployment lifecycle | The UI calls `PATCH /api/deployments/:id/settings`, but the Fastify API has no corresponding settings route. Saving settings will fail. | Done |
+| P0 | Environment variables | The UI exposes environment editing, but the backend route is `PATCH /:id/envs/update`; the Next.js proxy only implements `GET`. The update flow is incomplete. | Done |
+| P0 | Dockerfile support | The Kaniko manifest always uses `Dockerfile`. `rootDir` and `pathOfDockerfile` exist partially but are not passed into the build job. | Not Done |
+| P0 | Deployment readiness | Status becomes `READY` immediately after Kubernetes resources are submitted. It does not wait for the pod to become ready or expose a readiness failure. | Not Done |
+| P0 | Runtime failures | There is no runtime status reconciliation after deployment. A pod can crash or become unavailable while the database continues to say `READY`. | Not Done |
+| P0 | Deletion | The settings UI contains a delete flow, but the API has no delete endpoint. | Not Done |
+| P1 | Git integration | There are no GitHub webhooks, push-triggered deployments, commit status updates, or automatic redeployments. | Not Done |
+| P1 | Deployment history | Deployments are stored, but there is no clear concept of production deployment, rollback, promotion, or active version. | Not Done |
+| P1 | Scaling | `scalingMode` is persisted but ignored. Kubernetes always creates one replica, regardless of the selected mode. | Not Done |
+| P1 | Domains | URLs are hardcoded to `localtest.me` and a fixed NodePort. Custom domains, TLS, DNS, and production ingress are not implemented. | Not Done |
+| P1 | Logs | Redis stores deployment events temporarily, but there is no durable, searchable, phase-aware log store. | Not Done |
+| P2 | Operations | No queue dashboard, deployment cancellation, retry controls, stuck-job recovery, cleanup reconciliation, or resource usage history. | Not Done |
+| P2 | Team/product layer | No organizations, projects, collaborators, roles, billing plans, usage limits, or API keys. | Not Done |
 
 ## Concrete implementation gaps
 
