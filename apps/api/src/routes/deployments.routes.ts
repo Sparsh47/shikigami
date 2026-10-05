@@ -471,30 +471,60 @@ export async function userRoutes(fastify: FastifyInstance) {
     fastify.patch("/:id/envs/update", async (request, reply) => {
         try {
             const { id } = request.params as { id: string };
-            const { envs } = request.body as { envs: EnvVar[] };
+            const { envVars, agentName } = request.body as {
+                envVars?: Array<{ key: string; value: string; isSecret: boolean; id?: number }>;
+                agentName?: string;
+            };
 
-            const agent = await prisma.agent.findUnique({
-                where: { id: Number(id) },
+            const deployment = await prisma.deployment.findUnique({
+                where: { id: id },
                 include: {
-                    envVars: true
-                }
+                    agent: {
+                        include: {
+                            envVars: true,
+                        },
+                    },
+                },
             });
 
-            if (!agent) {
+            if (!deployment) {
                 return reply.status(404).send({ error: "Agent not found" });
             }
 
-            const existingEnvs = agent.envVars;
-            const updatedEnvs = [...existingEnvs, ...envs];
+            await prisma.$transaction(async (tx) => {
+                if (agentName && agentName.trim() !== deployment.agent.agentName) {
+                    await tx.agent.update({
+                        where: { id: deployment.agent.id },
+                        data: { agentName: agentName.trim() },
+                    });
+                }
 
-            await prisma.agent.update({
-                where: { id: agent.id },
-                data: {
-                    envVars: {
-                        create: envs
+                if (envVars && envVars.length > 0) {
+                    for (const env of envVars) {
+                        const existing = (env.id ? deployment.agent.envVars.find((e) => e.id === Number(env.id)) : null) ??
+                            deployment.agent.envVars.find((e) => e.key === env.key);
+
+                        if (existing) {
+                            await tx.envVar.update({
+                                where: { id: existing.id },
+                                data: {
+                                    value: env.value,
+                                    isSecret: env.isSecret,
+                                },
+                            });
+                        } else {
+                            await tx.envVar.create({
+                                data: {
+                                    agentId: deployment.agent.id,
+                                    key: env.key,
+                                    value: env.value,
+                                    isSecret: env.isSecret,
+                                },
+                            });
+                        }
                     }
                 }
-            })
+            });
 
             return reply.status(200).send({ success: true, agentId: id });
         } catch (err) {

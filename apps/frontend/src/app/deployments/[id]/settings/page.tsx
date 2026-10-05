@@ -180,8 +180,8 @@ function NavItem({
             type="button"
             onClick={onClick}
             className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors cursor-pointer text-left ${active
-                    ? "bg-[var(--accent)]/10 text-[var(--accent)]"
-                    : "text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-white/[0.04]"
+                ? "bg-[var(--accent)]/10 text-[var(--accent)]"
+                : "text-[var(--text-muted)] hover:text-[var(--text-heading)] hover:bg-white/[0.04]"
                 }`}
         >
             <span className={active ? "text-[var(--accent)]" : "text-[var(--text-muted)]"}>
@@ -359,14 +359,29 @@ export default function DeploymentSettingsPage() {
         setSaveError(null);
 
         try {
-            const res = await fetch(`/api/deployments/${id}/settings`, {
+            const updatedEnvVars = envVars
+                .filter((v) => v.key.trim() !== "")
+                .filter((v) => {
+                    const original = originalRef.current.envVars.find((orig) => orig.id === v.id);
+                    if (!original) return true;
+                    return (
+                        v.key.trim() !== original.key.trim() ||
+                        v.value !== original.value ||
+                        v.isSecret !== original.isSecret
+                    );
+                })
+                .map(({ key, value, isSecret }) => ({
+                    key: key.trim(),
+                    value,
+                    isSecret,
+                }));
+
+            const res = await fetch(`/api/deployments/${id}/envs/update`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     agentName: agentName.trim(),
-                    envVars: envVars
-                        .filter((v) => v.key.trim())
-                        .map(({ key, value, isSecret }) => ({ key: key.trim(), value, isSecret })),
+                    envVars: updatedEnvVars,
                 }),
             });
 
@@ -375,11 +390,13 @@ export default function DeploymentSettingsPage() {
                 throw new Error(err.message || err.error || "Failed to save settings");
             }
 
-            await fetch(`/api/deployments/${id}/redeploy`, { method: "POST" });
+            const newDeployment = await fetch(`/api/deployments/${id}/redeploy`, { method: "POST" });
+
+            const data = await newDeployment.json();
 
             originalRef.current = { agentName: agentName.trim(), envVars: structuredClone(envVars) };
             setSaveState("success");
-            setTimeout(() => { setSaveState("idle"); router.push(`/deployments/${id}`); }, 1400);
+            setTimeout(() => { setSaveState("idle"); router.push(`/deployments/${data.deploymentId}`); }, 1400);
         } catch (err: any) {
             setSaveState("error");
             setSaveError(err.message ?? "Something went wrong.");
@@ -629,9 +646,8 @@ export default function DeploymentSettingsPage() {
                             return (
                                 <div
                                     key={d.id}
-                                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-white/[0.015] ${
-                                        isCurrent ? "bg-[var(--accent)]/[0.03]" : ""
-                                    }`}
+                                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-white/[0.015] ${isCurrent ? "bg-[var(--accent)]/[0.03]" : ""
+                                        }`}
                                 >
                                     {/* Left: Status, name, commit, branch */}
                                     <div className="space-y-1.5 min-w-0">
@@ -736,11 +752,10 @@ export default function DeploymentSettingsPage() {
                     <button
                         type="button"
                         onClick={() => handleSectionChange("deployments")}
-                        className={`flex items-center gap-1.5 pb-2.5 font-medium border-b-2 transition-colors cursor-pointer ${
-                            activeSection === "deployments"
-                                ? "border-[var(--accent)] text-[var(--text-heading)]"
-                                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
-                        }`}
+                        className={`flex items-center gap-1.5 pb-2.5 font-medium border-b-2 transition-colors cursor-pointer ${activeSection === "deployments"
+                            ? "border-[var(--accent)] text-[var(--text-heading)]"
+                            : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+                            }`}
                     >
                         <History className="h-3.5 w-3.5" />
                         Deployments
@@ -748,11 +763,10 @@ export default function DeploymentSettingsPage() {
                     <button
                         type="button"
                         onClick={() => handleSectionChange(activeSection === "deployments" ? "general" : activeSection)}
-                        className={`flex items-center gap-1.5 pb-2.5 font-medium border-b-2 transition-colors cursor-pointer ${
-                            activeSection !== "deployments"
-                                ? "border-[var(--accent)] text-[var(--text-heading)]"
-                                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
-                        }`}
+                        className={`flex items-center gap-1.5 pb-2.5 font-medium border-b-2 transition-colors cursor-pointer ${activeSection !== "deployments"
+                            ? "border-[var(--accent)] text-[var(--text-heading)]"
+                            : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+                            }`}
                     >
                         <Settings className="h-3.5 w-3.5" />
                         Settings
@@ -793,8 +807,8 @@ export default function DeploymentSettingsPage() {
                                     type="button"
                                     onClick={() => handleSectionChange(tab.key)}
                                     className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors cursor-pointer ${activeSection === tab.key
-                                            ? "bg-[var(--accent)]/10 text-[var(--accent)]"
-                                            : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
+                                        ? "bg-[var(--accent)]/10 text-[var(--accent)]"
+                                        : "text-[var(--text-muted)] hover:text-[var(--text-heading)]"
                                         }`}
                                 >
                                     {tab.icon}

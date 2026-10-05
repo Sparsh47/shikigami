@@ -6,7 +6,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         const { id } = await params;
         const body = await request.json();
 
-        const response = await proxyToFastify(`/api/deployments/${id}/settings`, {
+        const response = await proxyToFastify(`/api/deployments/${id}/envs/update`, {
             method: "PATCH",
             body: JSON.stringify(body),
         });
@@ -20,7 +20,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             return NextResponse.json(err, { status: response.status });
         }
 
-        const data = await response.json();
+        const text = await response.text();
+        let data = {};
+        if (text) {
+            try {
+                data = JSON.parse(text);
+            } catch {
+                data = { message: text };
+            }
+        }
         return NextResponse.json(data);
     } catch (error) {
         return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
