@@ -16,8 +16,6 @@ const appsV1Api = kc.makeApiClient(k8s.AppsV1Api);
 const coreV1Api = kc.makeApiClient(k8s.CoreV1Api);
 const networkingV1Api = kc.makeApiClient(k8s.NetworkingV1Api);
 
-// NodePort that nginx-ingress exposes on localhost (http).
-// kubectl get svc ingress-nginx-controller -n ingress-nginx
 const INGRESS_NODE_PORT = 30581;
 
 const NAMESPACE = "default";
@@ -29,6 +27,7 @@ export interface KanikoJobOverrides {
     gitContext?: string;
     destination?: string;
     cache?: boolean;
+    contextSubPath?: string;
     pathOfDockerfile?: string;
 }
 
@@ -40,7 +39,7 @@ export async function createKanikoJob(overrides: KanikoJobOverrides = { cache: f
         jobManifest.metadata!.name = overrides.jobName;
     }
 
-    if (overrides.gitContext || overrides.destination) {
+    if (overrides.gitContext || overrides.destination || overrides.contextSubPath || overrides.pathOfDockerfile || overrides.jobName) {
         const kanikoContainer = jobManifest.spec?.template.spec?.containers?.[0];
         if (!kanikoContainer) {
             throw new Error("Kaniko container not found in Job manifest");
@@ -58,6 +57,9 @@ export async function createKanikoJob(overrides: KanikoJobOverrides = { cache: f
                 }
                 if (overrides.pathOfDockerfile && arg.startsWith("--dockerfile=")) {
                     return `--dockerfile=${overrides.pathOfDockerfile}`;
+                }
+                if (overrides.contextSubPath && arg.startsWith("--context-sub-path=")) {
+                    return `--context-sub-path=${overrides.contextSubPath}`;
                 }
                 return arg;
             });
@@ -281,17 +283,17 @@ export async function deployApp(opts: DeployAppOptions): Promise<string> {
 
 export async function streamJobLogs(jobName: string, outStream: Writable) {
     const log = new k8s.Log(kc);
-    
+
     // Find the pod for the job
     const podsRes = await coreV1Api.listNamespacedPod({
         namespace: NAMESPACE,
         labelSelector: `job-name=${jobName}`
     });
-    
+
     if (!podsRes.items || podsRes.items.length === 0) {
         throw new Error(`No pods found for job ${jobName}`);
     }
-    
+
     const pod = podsRes.items[0];
     if (!pod || !pod.metadata?.name) {
         throw new Error(`Pod has no name for job ${jobName}`);

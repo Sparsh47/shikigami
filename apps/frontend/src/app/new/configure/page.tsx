@@ -12,6 +12,7 @@ import {
     Globe,
     GitBranch,
     FolderGit2,
+    FileCode,
     Terminal,
     Cpu,
     Database,
@@ -112,6 +113,7 @@ function ConfigureAgentContent() {
     const [selectedFramework, setSelectedFramework] = useState(initialFramework);
     const [branch, setBranch] = useState(branchParam);
     const [rootDir, setRootDir] = useState("./");
+    const [dockerfilePath, setDockerfilePath] = useState("Dockerfile");
     const [port, setPort] = useState("8080");
 
     // Build settings
@@ -163,7 +165,13 @@ function ConfigureAgentContent() {
     const handleFrameworkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const fw = FRAMEWORK_OPTIONS.find((f) => f.id === e.target.value) || FRAMEWORK_OPTIONS[0];
         setSelectedFramework(fw);
-        if (!overrideBuild) setCustomBuildCmd(fw.defaultBuild);
+        if (!overrideBuild) {
+            setCustomBuildCmd(
+                fw.id === "dockerfile"
+                    ? `kaniko --dockerfile=${dockerfilePath.trim() || "Dockerfile"}`
+                    : fw.defaultBuild
+            );
+        }
         if (!overrideRun) setCustomRunCmd(fw.defaultRun);
     };
 
@@ -209,7 +217,11 @@ function ConfigureAgentContent() {
             cloneUrl = `${cloneUrl}.git`;
         }
 
-        const buildCmd = overrideBuild ? customBuildCmd : selectedFramework.defaultBuild;
+        const defaultBuildCmd =
+            selectedFramework.id === "dockerfile"
+                ? `kaniko --dockerfile=${dockerfilePath.trim() || "Dockerfile"}`
+                : selectedFramework.defaultBuild;
+        const buildCmd = overrideBuild ? customBuildCmd : defaultBuildCmd;
         const rawRunCmd = overrideRun ? customRunCmd : selectedFramework.defaultRun;
         const runCmd = rawRunCmd === "container entrypoint" ? "" : rawRunCmd;
         const cpuValue = parseFloat(cpu.replace(/[^0-9.]/g, "")) || 1.0;
@@ -222,6 +234,7 @@ function ConfigureAgentContent() {
             branch: branch || "main",
             isPrivate: Boolean(isPrivate),
             rootDir: rootDir || "./",
+            dockerfilePath: dockerfilePath || "Dockerfile",
             buildCommand: buildCmd,
             runCommand: runCmd,
             port: parseInt(port, 10) || 8080,
@@ -434,13 +447,44 @@ function ConfigureAgentContent() {
                                     <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">
                                         Root Directory
                                     </label>
-                                    <input
-                                        type="text"
-                                        value={rootDir}
-                                        onChange={(e) => setRootDir(e.target.value)}
-                                        placeholder="./"
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] px-3.5 py-2 text-sm text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors font-mono"
-                                    />
+                                    <div className="relative">
+                                        <FolderGit2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
+                                        <input
+                                            type="text"
+                                            value={rootDir}
+                                            onChange={(e) => setRootDir(e.target.value)}
+                                            placeholder="./"
+                                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors font-mono"
+                                        />
+                                    </div>
+                                    <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">
+                                        Directory where build commands run.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-[var(--text-muted)] mb-1.5">
+                                        Dockerfile Path
+                                    </label>
+                                    <div className="relative">
+                                        <FileCode className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
+                                        <input
+                                            type="text"
+                                            value={dockerfilePath}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setDockerfilePath(val);
+                                                if (selectedFramework.id === "dockerfile" && !overrideBuild) {
+                                                    setCustomBuildCmd(`kaniko --dockerfile=${val.trim() || "Dockerfile"}`);
+                                                }
+                                            }}
+                                            placeholder="Dockerfile"
+                                            className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-base)] py-2 pl-9 pr-4 text-sm text-[var(--text-heading)] focus:border-[var(--accent)]/50 focus:outline-none transition-colors font-mono"
+                                        />
+                                    </div>
+                                    <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">
+                                        Relative to root directory (e.g. <span className="font-mono text-[var(--text-heading)]">Dockerfile</span> or <span className="font-mono text-[var(--text-heading)]">docker/Dockerfile</span>).
+                                    </p>
                                 </div>
                             </div>
                         </div>

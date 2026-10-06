@@ -8,6 +8,7 @@ export const createDeploymentSchema = z.object({
     branch: z.string().default("main"),
     isPrivate: z.coerce.boolean().default(false),
     rootDir: z.string().default("./"),
+    dockerfilePath: z.string().default("Dockerfile"),
     buildCommand: z.string().default(""),
     runCommand: z.string().default(""),
     port: z.coerce.number().int().positive().default(8080),

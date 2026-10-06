@@ -17,6 +17,8 @@ spec:
             # 2. Path to the Dockerfile inside that repo (relative to repo root)
             - "--dockerfile=Dockerfile"
 
+            - "--context-sub-path=."
+
             # 3. Where to push the resulting image
             - "--destination=jestico/shikigami-test-app:v1.0"
 

@@ -5,6 +5,7 @@ import { createDeploymentSchema } from "../types/deployments.types.js";
 import { flowProducer } from "@repo/queue";
 import { createRedisClient } from "@repo/redis";
 import { streamJobLogs } from "@repo/k8s";
+import path from "path";
 
 export async function userRoutes(fastify: FastifyInstance) {
     fastify.get("/", async (request, reply) => {
@@ -107,7 +108,6 @@ export async function userRoutes(fastify: FastifyInstance) {
                 });
             }
 
-            // userId comes from the verified GitHub session, not the request body
             const userId = request.userId;
 
             const {
@@ -118,6 +118,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                 branch,
                 isPrivate,
                 rootDir,
+                dockerfilePath,
                 buildCommand,
                 runCommand,
                 port,
@@ -129,6 +130,16 @@ export async function userRoutes(fastify: FastifyInstance) {
                 commitSha,
                 commitMessage,
             } = parsed.data;
+
+            if (!dockerfilePath.trim()) {
+                return reply.status(400).send({ error: "Docker file path is required" });
+            }
+
+            if (path.posix.isAbsolute(dockerfilePath) || path.win32.isAbsolute(dockerfilePath)) {
+                return reply.status(400).send({ error: "Docker file path cannot be absolute" });
+            }
+
+            const normalizedDockerPath = path.posix.normalize(dockerfilePath);
 
             const PLATFORM_REGISTRY = "jestico";
             const registry = dockerUsername ?? PLATFORM_REGISTRY;
@@ -151,6 +162,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                         branch,
                         isPrivate,
                         rootDir,
+                        dockerfilePath: normalizedDockerPath,
                         buildCommand,
                         runCommand,
                         port,
@@ -177,6 +189,7 @@ export async function userRoutes(fastify: FastifyInstance) {
                         branch,
                         isPrivate,
                         rootDir,
+                        dockerfilePath: normalizedDockerPath,
                         buildCommand,
                         runCommand,
                         port,
@@ -240,7 +253,9 @@ export async function userRoutes(fastify: FastifyInstance) {
                             cpu,
                             memory,
                             runCommand,
-                            kanikoJobName: `kaniko-${deployment.id}`
+                            kanikoJobName: `kaniko-${deployment.id}`,
+                            rootDir,
+                            dockerfilePath: normalizedDockerPath
                         }
                     }
                 ]
@@ -314,7 +329,9 @@ export async function userRoutes(fastify: FastifyInstance) {
                             cpu: agent.cpu,
                             memory: agent.memory,
                             runCommand: agent.runCommand,
-                            kanikoJobName: `kaniko-${newDeployment.id}`
+                            kanikoJobName: `kaniko-${newDeployment.id}`,
+                            rootDir: agent.rootDir,
+                            dockerfilePath: agent.dockerfilePath
                         }
                     }
                 ]

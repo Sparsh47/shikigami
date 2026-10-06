@@ -5,7 +5,7 @@ import { prisma } from "@repo/db";
 import { publishEvent } from "./lib/utils.js";
 
 export const buildWorker = new Worker("build", async (job) => {
-    const { deploymentId, gitContext, image, kanikoJobName } = job.data;
+    const { deploymentId, gitContext, image, kanikoJobName, rootDir, dockerfilePath } = job.data;
 
     await prisma.deployment.update({
         where: { id: deploymentId },
@@ -16,7 +16,9 @@ export const buildWorker = new Worker("build", async (job) => {
         await createKanikoJob({
             jobName: kanikoJobName,
             gitContext,
-            destination: image
+            destination: image,
+            contextSubPath: rootDir,
+            pathOfDockerfile: dockerfilePath
         });
         await publishEvent(deploymentId, "BUILD_STARTED", "Triggered Kaniko build container in Kubernetes", "build");
     } catch (err: any) {
@@ -40,7 +42,6 @@ export const buildWorker = new Worker("build", async (job) => {
         await publishEvent(deploymentId, "BUILD_FAILED", "Kaniko build failed", "build");
         throw new Error("Kaniko build job failed");
     } else {
-        // Job still running, delay this bullmq job by 5 seconds
         await publishEvent(deploymentId, "BUILD_POLLING", "Waiting for Kaniko build to complete...", "build");
         job.moveToDelayed(Date.now() + 5000);
         throw new DelayedError();

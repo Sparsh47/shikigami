@@ -5,8 +5,6 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
-        // Strip userId from the body — Fastify now derives it from the verified session header.
-        // Clients should NOT send userId; if they do, it's ignored at the schema level.
         const { userId: _ignored, ...safeBody } = body;
 
         const response = await proxyToFastify("/api/deployments/create", {

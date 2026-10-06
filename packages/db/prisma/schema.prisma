@@ -27,6 +27,7 @@ model Agent {
   isPrivate    Boolean @default(false)
 
   rootDir      String @default("./")
+  dockerfilePath String @default("Dockerfile")
   buildCommand String
   runCommand   String
   port         Int    @default(8080)
@@ -35,7 +36,7 @@ model Agent {
   cpu         Float  @default(1.0)
   scalingMode String @default("serverless")
 
-  dockerUsername String? // null = push to platform default registry
+  dockerUsername String?
 
   envVars   EnvVar[]
   createdAt DateTime @default(now())
